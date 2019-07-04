@@ -9,7 +9,7 @@
     "gulp-rename": "^1.4.0",
     "gulp-riot": "^1.1.5",
     "gulp-sourcemaps": "^2.6.4",
-    "riot": "^3.13.2"
+    "riot": "^4.3.2"
   },
   "engines": {
     "node": ">= 8.0.0"
