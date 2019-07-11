@@ -101,7 +101,7 @@ class RiotTask {
       // entry name
       if (entry.name) {
         // return riot register
-        return `riot.register('${entry.name}', require('${entry.file}').default);`;
+        return `exporting['${entry.name}'] = require('${entry.file}').default; riot.register('${entry.name}', exporting['${entry.name}']);`;
       }
 
       // return require
@@ -120,7 +120,7 @@ class RiotTask {
       'unregister();',
       'module.exports = exporting;',
     ].join(os.EOL));
-    await fs.writeFile(`${global.appRoot}/data/cache/view.frontend.js`, `${head}${os.EOL}${os.EOL}${output}`);
+    await fs.writeFile(`${global.appRoot}/data/cache/view.frontend.js`, `${head}${os.EOL}const exporting = {};${os.EOL}${output}${os.EOL}module.exports = exporting;`);
   }
 
   /**

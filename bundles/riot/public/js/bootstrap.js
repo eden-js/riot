@@ -1,14 +1,15 @@
 
 // Require local dependencies
-const riot   = require('riot');
-const store  = require('default/public/js/store');
-const events = require('events');
+const riot    = require('riot');
+const store   = require('default/public/js/store');
+const events  = require('events');
+const hydrate = require('@riotjs/hydrate');
 
 // Add riot to window
 window.riot = riot;
 
 // Require tags
-require('cache/view.frontend.js');
+const tags = require('cache/view.frontend.js');
 
 /**
  * Build riot frontend class
@@ -36,8 +37,11 @@ class RiotFrontend extends events {
    * @param {Object} state
    */
   _mount(state) {
+    // create hydrated
+    const createHydrated = hydrate(tags[document.querySelector('body').children[0].tagName.toLowerCase()]);
+
     // Mount riot tag
-    [this._mounted] = riot.mount(document.querySelector('body').children[0], state, document.querySelector('body').children[0].tagName.toLowerCase());
+    this._mounted = createHydrated(document.querySelector('body').children[0], state);
   }
 
   /**
