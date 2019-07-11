@@ -52,8 +52,6 @@ riot.mixin('layout', {
    * On route function
    *
    * @param {Object} opts
-   *
-   * @returns {*}
    */
   __route(opts) {
     // Reset opts if includes state
@@ -72,6 +70,6 @@ riot.mixin('layout', {
     this.view = opts.mount.page;
 
     // Update view
-    this.update();
+    return this.update();
   },
 });

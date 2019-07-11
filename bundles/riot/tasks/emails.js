@@ -1,6 +1,5 @@
 
 // Require dependencies
-const path           = require('path');
 const fs             = require('fs-extra');
 const gulp           = require('gulp');
 const gulpRiot       = require('gulp-riot');
@@ -120,6 +119,7 @@ class EmailTask {
       filePath.dirname = amended; // eslint-disable-line no-param-reassign
     }));
 
+    // put in emails cache
     job = job.pipe(gulp.dest(`${global.appRoot}/data/cache/emails`));
 
     // Wait for job to end
