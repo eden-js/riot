@@ -65,6 +65,7 @@ class RiotTask {
     ]);
 
     // ems require
+    // can be removed with --experimental-modules flag
     const esmRequire = require('esm')(module);
 
     // map files
