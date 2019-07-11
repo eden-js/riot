@@ -69,7 +69,7 @@ class RiotTask {
     const esmRequire = require('esm')(module);
 
     // map files
-    const compiledFiles = await Promise.all(entries.map(async (entry) => {
+    const compiledFiles = (await Promise.all(entries.map(async (entry) => {
       // compile if riot
       if (entry.includes('.riot')) {
         // read file
@@ -93,19 +93,15 @@ class RiotTask {
       }
 
       // return entry
-      return {
-        orig : entry,
-        name : null,
-        file : entry,
-      };
-    }));
+      return null;
+    }))).filter(e => e);
 
     // return backend
     const output = compiledFiles.map((entry) => {
       // entry name
       if (entry.name) {
         // return riot register
-        return `riot.register('${entry.name}', require('${entry.file}'));`;
+        return `riot.register('${entry.name}', require('${entry.file}').default);`;
       }
 
       // return require
@@ -132,7 +128,7 @@ class RiotTask {
    */
   watch() {
     // Return files
-    return ['views/js/**/*.js', 'views/**/*.riot'];
+    return ['views/js/**/*', 'views/**/*.riot'];
   }
 
   /**

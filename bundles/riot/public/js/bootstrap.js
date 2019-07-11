@@ -37,7 +37,7 @@ class RiotFrontend extends events {
    */
   _mount(state) {
     // Mount riot tag
-    [this._mounted] = riot.mount(document.querySelector('body').children[0], state);
+    [this._mounted] = riot.mount(document.querySelector('body').children[0], state, document.querySelector('body').children[0].tagName.toLowerCase());
   }
 
   /**
