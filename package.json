@@ -3,13 +3,13 @@
   "description": "",
   "version": "4.0.0",
   "dependencies": {
-    "gulp": "^4.0.0",
+    "gulp": "^4.0.2",
     "gulp-concat": "^2.6.1",
     "gulp-header": "^2.0.7",
     "gulp-rename": "^1.4.0",
     "gulp-riot": "^1.1.5",
-    "gulp-sourcemaps": "^2.6.4",
-    "riot": "^3.13.2"
+    "gulp-sourcemaps": "^2.6.5",
+    "riot": "^4.3.5"
   },
   "engines": {
     "node": ">= 8.0.0"
@@ -30,10 +30,10 @@
   "homepage": "https://github.com/eden-js/riot#readme",
   "devDependencies": {
     "@edenjs/eslint-config-eden": "^2.0.14",
-    "eslint": "^5.13.0",
-    "eslint-config-airbnb": "^17.1.0",
-    "eslint-plugin-import": "^2.16.0",
-    "eslint-plugin-jsx-a11y": "^6.2.0",
-    "eslint-plugin-react": "^7.12.4"
+    "eslint": "^6.0.1",
+    "eslint-config-airbnb": "^17.1.1",
+    "eslint-plugin-import": "^2.18.0",
+    "eslint-plugin-jsx-a11y": "^6.2.3",
+    "eslint-plugin-react": "^7.14.2"
   }
 }
