@@ -13,7 +13,18 @@ class LayoutStruct extends Events {
     // run super
     super();
 
-    console.log('sup');
+    this.onBeforeMount = this.onBeforeMount.bind(this);
+  }
+
+  /**
+   * on before mount
+   */
+  onBeforeMount(props, state) {
+    // Reset opts if includes state
+    this.state = props.state ? props.state : this.state;
+
+    // set view
+    this.state.view = props.mount.page;
   }
 }
 
