@@ -111,12 +111,14 @@ class RiotTask {
     // write file
     await fs.writeFile(`${global.appRoot}/data/cache/view.backend.js`, [
       "const createRegister = require('@riotjs/ssr/register');",
+      'const exporting = {};',
       'const unregister = createRegister();',
       compiledFiles.map((file) => {
         // require original
-        return `require('${file.orig}');`;
+        return `exporting['${file.name}'] = require('${file.orig}');`;
       }).join(os.EOL),
       'unregister();',
+      'module.exports = exporting;',
     ].join(os.EOL));
     await fs.writeFile(`${global.appRoot}/data/cache/view.frontend.js`, `${head}${os.EOL}${os.EOL}${output}`);
   }

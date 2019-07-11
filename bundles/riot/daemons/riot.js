@@ -18,13 +18,17 @@ class RiotDaemon extends Daemon {
     // Run super
     super();
 
+    // bind methods
+    this.email = this.email.bind(this);
+    this.render = this.render.bind(this);
+
     // Require tags
     //require('cache/emails'); // eslint-disable-line global-require
 
     // On render
     if (this.eden.router) {
       // require tags for router threads
-      require('cache/view.backend.js'); // eslint-disable-line global-require
+      this.components = require('cache/view.backend.js'); // eslint-disable-line global-require
 
       // add pre for router only threads
       this.eden.pre('view.compile', (r) => {
@@ -55,7 +59,7 @@ class RiotDaemon extends Daemon {
    */
   async render(opts) {
     // Render page
-    return await render.default(opts.mount.layout, opts);
+    return await render.default(opts.mount.layout, this.components[opts.mount.layout].default, opts);
   }
 
   /**
@@ -68,7 +72,7 @@ class RiotDaemon extends Daemon {
    */
   async email(template, opts) {
     // Return render
-    return await render.default(`${template}-email`, opts);
+    return await render.default(`${template}-email`, this.components[`${template}-email`].default, opts);
   }
 }
 
