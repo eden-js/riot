@@ -22,6 +22,8 @@ class RiotDaemon extends Daemon {
     this.email = this.email.bind(this);
     this.render = this.render.bind(this);
 
+    console.log(render);
+
     // Require tags
     //require('cache/emails'); // eslint-disable-line global-require
 

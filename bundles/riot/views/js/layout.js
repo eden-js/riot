@@ -13,7 +13,9 @@ class LayoutStruct extends Events {
     // run super
     super();
 
+    // bind before mount
     this.onBeforeMount = this.onBeforeMount.bind(this);
+    this.onBeforeHydrate = this.onBeforeHydrate.bind(this);
   }
 
   /**
@@ -21,10 +23,27 @@ class LayoutStruct extends Events {
    */
   onBeforeMount(props, state) {
     // Reset opts if includes state
-    this.state = props.state ? props.state : this.state;
+    const newState = props.state ? props.state : this.state;
+    newState.view = props.mount.page;
 
-    // set view
-    this.state.view = props.mount.page;
+    // set state
+    Object.keys(newState).forEach((key) => {
+      state[key] = newState[key];
+    });
+  }
+
+  /**
+   * on before mount
+   */
+  onBeforeHydrate(props, state) {
+    // Reset opts if includes state
+    const newState = props.state ? props.state : this.state;
+    newState.view = props.mount.page;
+
+    // set state
+    Object.keys(newState).forEach((key) => {
+      state[key] = newState[key];
+    });
   }
 }
 
