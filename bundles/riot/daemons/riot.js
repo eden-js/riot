@@ -1,8 +1,9 @@
 
 // Require dependencies
-const riot   = require('riot');
 const path   = require('path');
+const render = require('@riotjs/ssr');
 const Daemon = require('daemon');
+
 
 /**
  * Build riot dameon class
@@ -18,23 +19,23 @@ class RiotDaemon extends Daemon {
     super();
 
     // Require tags
-    require('cache/emails'); // eslint-disable-line global-require
+    //require('cache/emails'); // eslint-disable-line global-require
 
     // On render
     if (this.eden.router) {
       // require tags for router threads
-      require('cache/tags'); // eslint-disable-line global-require
+      require('cache/view.backend.js'); // eslint-disable-line global-require
 
       // add pre for router only threads
-      this.eden.pre('view.compile', (render) => {
+      this.eden.pre('view.compile', (r) => {
         // Alter mount page
         // eslint-disable-next-line no-param-reassign
-        render.mount.page = render.mount.page.includes('views') ? `${render.mount.page.split('views')[1].substr(path.sep.length).split(path.sep).join('-').trim()
-          .replace('.tag', '')}-page` : render.mount.page;
+        r.mount.page = r.mount.page.includes('views') ? `${r.mount.page.split('views')[1].substr(path.sep.length).split(path.sep).join('-').trim()
+          .replace('.tag', '')}-page` : r.mount.page;
 
         // Alter mount layout
         // eslint-disable-next-line no-param-reassign
-        render.mount.layout = render.mount.layout.includes('-layout') ? render.mount.layout : `${render.mount.layout}-layout`;
+        r.mount.layout = r.mount.layout.includes('-layout') ? r.mount.layout : `${r.mount.layout}-layout`;
       });
 
       // set view for router threads
@@ -52,9 +53,9 @@ class RiotDaemon extends Daemon {
    *
    * @return {String}
    */
-  render(opts) {
+  async render(opts) {
     // Render page
-    return riot.render(opts.mount.layout, opts);
+    return await render.default(opts.mount.layout, opts);
   }
 
   /**
@@ -65,9 +66,9 @@ class RiotDaemon extends Daemon {
    *
    * @return Promise
    */
-  email(template, options) {
+  async email(template, opts) {
     // Return render
-    return riot.render(`${template}-email`, options);
+    return await render.default(`${template}-email`, opts);
   }
 }
 

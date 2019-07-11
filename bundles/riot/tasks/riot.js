@@ -1,15 +1,14 @@
 
 // Require dependencies
-const fs             = require('fs-extra');
-const gulp           = require('gulp');
-const gulpRiot       = require('gulp-riot');
-const gulpConcat     = require('gulp-concat');
-const gulpHeader     = require('gulp-header');
-const gulpRename     = require('gulp-rename');
-const gulpSourcemaps = require('gulp-sourcemaps');
+const fs         = require('fs-extra');
+const os         = require('os');
+const gulp       = require('gulp');
+const gulpRename = require('gulp-rename');
 
-// Require local dependencies
-const config = require('config');
+// require dependencies
+const glob        = require('@edenjs/glob');
+const config      = require('config');
+const { compile } = require('@riotjs/compiler');
 
 /**
  * Build riot task class
@@ -43,51 +42,86 @@ class RiotTask {
    */
   async run(files) {
     // Create header
-    let head      = '';
+    let head      = ['// AUTOMATICALLY GENERATED EDENJS VIEW ENGINE //', ''];
     const include = config.get('view.include') || {};
 
     // Loop include
-    for (const key of Object.keys(include)) {
-      head += `const ${key} = require ("${include[key]}");`;
-    }
+    Object.keys(include).forEach((key) => {
+      // push require head
+      head.push(`const ${key} = require('${include[key]}');`);
+    });
+
+    // join head
+    head = head.join(os.EOL);
 
     // Await views
     await this._views(files);
 
-    // Return promise
-    let job = gulp.src([
-      `${global.appRoot}/data/cache/views/**/*.js`,
-      `${global.appRoot}/data/cache/views/**/*.tag`,
-      `!${global.appRoot}/data/cache/views/email/**/*.tag`,
+    // get files
+    const entries = await glob([
+      `${global.appRoot}/data/cache/riot/js/**/*.js`,
+      `${global.appRoot}/data/cache/riot/**/*.riot`,
+      `!${global.appRoot}/data/cache/riot/email/**/*.riot`,
     ]);
 
-    if (config.get('environment') === 'dev' && !config.get('noSourcemaps')) {
-      job = job.pipe(gulpSourcemaps.init());
-    }
+    // ems require
+    const esmRequire = require('esm')(module);
 
-    job = job
-      .pipe(gulpRiot({
-        compact    : true,
-        whitespace : false,
-      }))
-      .pipe(gulpConcat('tags.js'))
-      .pipe(gulpHeader('const riot = require ("riot");'))
-      .pipe(gulp.dest(`${global.appRoot}/data/cache`))
-      .pipe(gulpHeader(head))
-      .pipe(gulpRename('tags.min.js'));
+    // map files
+    const compiledFiles = await Promise.all(entries.map(async (entry) => {
+      // compile if riot
+      if (entry.includes('.riot')) {
+        // read file
+        const item = await fs.readFile(entry, 'utf8');
 
+        // code/map
+        const { code, map } = await compile(item, {
+          file : entry,
+        });
 
-    if (config.get('environment') === 'dev' && !config.get('noSourcemaps')) {
-      job = job.pipe(gulpSourcemaps.write('.'));
-    }
+        // write compiled
+        await fs.writeFile(`${entry}.js`, code);
+        await fs.writeFile(`${entry}.map`, JSON.stringify(map));
 
-    job = job.pipe(gulp.dest(`${global.appRoot}/data/cache`));
+        // return compiled
+        return {
+          orig : entry,
+          name : esmRequire(`${entry}.js`).default.name, // todo this sucks
+          file : `${entry}.js`,
+        };
+      }
 
-    // Wait for job to end
-    await new Promise((resolve, reject) => {
-      job.once('end', resolve);
-      job.once('error', reject);
-    });
+      // return entry
+      return {
+        orig : entry,
+        name : null,
+        file : entry,
+      };
+    }));
+
+    // return backend
+    const output = compiledFiles.map((entry) => {
+      // entry name
+      if (entry.name) {
+        // return riot register
+        return `riot.register('${entry.name}', require('${entry.file}'));`;
+      }
+
+      // return require
+      return `require('${entry.file}');`;
+    }).join(os.EOL);
+
+    // write file
+    await fs.writeFile(`${global.appRoot}/data/cache/view.backend.js`, [
+      "const createRegister = require('@riotjs/ssr/register');",
+      'const unregister = createRegister();',
+      compiledFiles.map((file) => {
+        // require original
+        return `require('${file.orig}');`;
+      }).join(os.EOL),
+      'unregister();',
+    ].join(os.EOL));
+    await fs.writeFile(`${global.appRoot}/data/cache/view.frontend.js`, `${head}${os.EOL}${os.EOL}${output}`);
   }
 
   /**
@@ -97,7 +131,7 @@ class RiotTask {
    */
   watch() {
     // Return files
-    return 'views/**/*';
+    return ['views/js/**/*.js', 'views/**/*.riot'];
   }
 
   /**
@@ -110,11 +144,12 @@ class RiotTask {
    */
   async _views(files) {
     // Remove views cache directory
-    await fs.remove(`${global.appRoot}/data/cache/views`);
+    await fs.remove(`${global.appRoot}/data/cache/riot`);
 
     // Run gulp
     let job = gulp.src(files);
 
+    // pipe rename
     job = job.pipe(gulpRename((filePath) => {
       // Get amended
       let amended = filePath.dirname.replace(/\\/g, '/').split('bundles/');
@@ -129,7 +164,8 @@ class RiotTask {
       filePath.dirname = amended; // eslint-disable-line no-param-reassign
     }));
 
-    job = job.pipe(gulp.dest(`${global.appRoot}/data/cache/views`));
+    // pipe to riot folder
+    job = job.pipe(gulp.dest(`${global.appRoot}/data/cache/riot`));
 
     // Wait for job to end
     await new Promise((resolve, reject) => {

@@ -3,13 +3,19 @@
   "description": "",
   "version": "4.0.0",
   "dependencies": {
+    "@edenjs/glob": "^1.0.0",
+    "@riotjs/compiler": "^4.3.5",
+    "@riotjs/ssr": "^4.1.0",
+    "browserify": "^16.3.0",
     "gulp": "^4.0.2",
     "gulp-concat": "^2.6.1",
     "gulp-header": "^2.0.7",
     "gulp-rename": "^1.4.0",
     "gulp-riot": "^1.1.5",
     "gulp-sourcemaps": "^2.6.5",
-    "riot": "^4.3.5"
+    "riot": "^4.3.5",
+    "riotify": "^4.0.0",
+    "vinyl-source-stream": "^2.0.0"
   },
   "engines": {
     "node": ">= 8.0.0"

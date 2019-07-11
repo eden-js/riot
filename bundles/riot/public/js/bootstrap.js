@@ -4,11 +4,11 @@ const riot   = require('riot');
 const store  = require('default/public/js/store');
 const events = require('events');
 
-// Require tags
-require('cache/tags.min');
-
 // Add riot to window
 window.riot = riot;
+
+// Require tags
+require('cache/view.frontend.js');
 
 /**
  * Build riot frontend class
