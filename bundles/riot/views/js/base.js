@@ -8,13 +8,11 @@ const EdenStore = require('default/public/js/store');
  * export default layout struct
  */
 class EdenBaseStruct extends Events {
+  
   /**
-   * construct default layout struct
+   * on before mount
    */
-  constructor() {
-    // run super
-    super();
-
+  onBeforeMount() {
     // setup eden
     this.eden = {
       get  : this.edenGet.bind(this),
@@ -75,14 +73,14 @@ class EdenBaseStruct extends Events {
    * @param {String} key 
    */
   edenGet(key) {
-    // check frontend
-    if (typeof window === 'undefined') {
-      // get props
-      return dotProp.get(this.__root().props, key);
+    // store
+    if ((this.eden || {}).store) {
+      // Return value
+      return this.eden.store.get(key);
     }
 
-    // Return value
-    return EdenStore.get(key);
+    // get props
+    return dotProp.get(this.edenRoot().props, key);
   }
 
   /**
@@ -93,13 +91,13 @@ class EdenBaseStruct extends Events {
    */
   edenSet(key, value) {
     // check frontend
-    if (typeof window === 'undefined') {
-      // get props
-      return dotProp.set(this.__root().props, key, value);
+    if ((this.eden || {}).store) {
+      // Return value
+      return this.eden.store.set(key, value);
     }
 
-    // Return value
-    return EdenStore.set(key, value);
+    // get props
+    return dotProp.set(this.edenRoot().props, key, value);
   }
 }
 
