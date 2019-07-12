@@ -1,10 +1,15 @@
+
+// create classes mixin
 module.exports = (classes) => {
   // entries
   return Object.entries(classes).reduce((acc, item) => {
-    const [key, value] = item
+    // key/value
+    const [key, value] = item;
 
-    if (value) return [...acc, key]
+    // check value
+    if (value) return [...acc, key];
 
-    return acc
-  }, []).join(' ')
+    // return accumulated
+    return acc;
+  }, []).join(' ');
 };

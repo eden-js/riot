@@ -9,7 +9,7 @@ const hydrate = require('@riotjs/hydrate');
 window.riot = riot;
 
 // Require tags
-const tags = require('cache/view.frontend.js');
+const tags = require('cache/view.frontend');
 
 /**
  * Build riot frontend class

@@ -80,6 +80,10 @@ class RiotTask {
           file : entry,
         });
 
+        // remove old files
+        await fs.remove(`${entry}.js`);
+        await fs.remove(`${entry}.map`);
+
         // write compiled
         await fs.writeFile(`${entry}.js`, code);
         await fs.writeFile(`${entry}.map`, JSON.stringify(map));
@@ -98,17 +102,15 @@ class RiotTask {
 
     // return backend
     const output = compiledFiles.map((entry) => {
-      // entry name
-      if (entry.name) {
-        // return riot register
-        return `exporting['${entry.name}'] = require('${entry.file}').default; riot.register('${entry.name}', exporting['${entry.name}']);`;
-      }
-
-      // return require
-      return `require('${entry.file}');`;
+      // return riot register
+      return `exporting['${entry.name}'] = require('${entry.file}').default; riot.register('${entry.name}', exporting['${entry.name}']);`;
     }).join(os.EOL);
 
     // write file
+    await fs.remove(`${global.appRoot}/data/cache/view.backend.js`);
+    await fs.remove(`${global.appRoot}/data/cache/view.frontend.js`);
+
+    // write files
     await fs.writeFile(`${global.appRoot}/data/cache/view.backend.js`, [
       "const createRegister = require('@riotjs/ssr/register');",
       'const exporting = {};',
@@ -117,7 +119,6 @@ class RiotTask {
         // require original
         return `exporting['${file.name}'] = require('${file.orig}');`;
       }).join(os.EOL),
-      'unregister();',
       'module.exports = exporting;',
     ].join(os.EOL));
     await fs.writeFile(`${global.appRoot}/data/cache/view.frontend.js`, `${head}${os.EOL}const exporting = {};${os.EOL}${output}${os.EOL}module.exports = exporting;`);

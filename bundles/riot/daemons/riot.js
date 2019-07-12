@@ -22,8 +22,6 @@ class RiotDaemon extends Daemon {
     this.email = this.email.bind(this);
     this.render = this.render.bind(this);
 
-    console.log(render);
-
     // Require tags
     //require('cache/emails'); // eslint-disable-line global-require
 
@@ -60,8 +58,11 @@ class RiotDaemon extends Daemon {
    * @return {String}
    */
   async render(opts) {
+    // view name
+    const viewName = opts.mount.layout || 'main-layout';
+
     // Render page
-    return await render.default(opts.mount.layout, this.components[opts.mount.layout].default, opts);
+    return await render.default(viewName, this.components[viewName].default, opts);
   }
 
   /**
