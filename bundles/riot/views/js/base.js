@@ -8,11 +8,10 @@ const EdenStore = require('default/public/js/store');
  * export default layout struct
  */
 class EdenBaseStruct extends Events {
-  
   /**
    * on before mount
    */
-  onBeforeMount() {
+  onBeforeMount(props) {
     // setup eden
     this.eden = {
       get  : this.edenGet.bind(this),
@@ -36,6 +35,43 @@ class EdenBaseStruct extends Events {
        */
       backend  : (typeof window === 'undefined'),
       frontend : (typeof window !== 'undefined'),
+    };
+    this.refs = {};
+    this.props = props;
+
+    // props ref
+    if (props.ref && typeof props.ref === 'function') {
+      // set ref
+      props.ref(this);
+    }
+  }
+
+  /**
+   * on before mount
+   */
+  onBeforeUpdate(props) {
+    // props
+    this.props = props;
+
+    // props ref
+    if (props.ref && typeof props.ref === 'function') {
+      // set ref
+      props.ref(this);
+    }
+  }
+
+  // HELPER METHODS
+
+  /**
+   * Create ref callback function
+   *
+   * @param {String} type 
+   */
+  ref(type) {
+    // return created fucntion
+    return (ref) => {
+      // set ref
+      this.refs[type] = ref;
     };
   }
 
