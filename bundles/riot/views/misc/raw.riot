@@ -1,0 +1,23 @@
+<raw>
+  <script>
+
+    export default class Raw {
+      onMounted(props) {
+        this.__set(props);
+      }
+      onUpdated(props) {
+        this.__set(props);
+      }
+      onShouldUpdate(props) {
+        if (!this.root) return true;
+        this.__set(props);
+        return false;
+      }
+
+      __set(props) {
+        if (this.root) this.root.innerHTML = ((props.data || {}).html || props.html || '').toString();
+      }
+    }
+
+  </script>
+</raw>

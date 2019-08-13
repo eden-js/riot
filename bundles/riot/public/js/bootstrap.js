@@ -61,7 +61,8 @@ class RiotFrontend extends events {
 
     // Check if layout needs replacing
     if (current.tagName.toLowerCase() === layout.toLowerCase()) {
-      return false;
+      // just update mounted
+      return this._mounted.setProps(state);
     }
 
     // Unmount tag

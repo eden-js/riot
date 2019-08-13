@@ -59,14 +59,10 @@ class RiotTask {
 
     // get files
     const entries = await glob([
-      `${global.appRoot}/data/cache/riot/js/**/*.js`,
-      `${global.appRoot}/data/cache/riot/**/*.riot`,
-      `!${global.appRoot}/data/cache/riot/email/**/*.riot`,
+      `${global.appRoot}/data/cache/views/js/**/*.js`,
+      `${global.appRoot}/data/cache/views/**/*.riot`,
+      `!${global.appRoot}/data/cache/views/email/**/*.riot`,
     ]);
-
-    // ems require
-    // can be removed with --experimental-modules flag
-    const esmRequire = require('esm')(module);
 
     // map files
     const compiledFiles = (await Promise.all(entries.map(async (entry) => {
@@ -88,10 +84,13 @@ class RiotTask {
         await fs.writeFile(`${entry}.js`, code);
         await fs.writeFile(`${entry}.map`, JSON.stringify(map));
 
+        // split
+        const split = code.split(os.EOL);
+
         // return compiled
         return {
           orig : entry,
-          name : esmRequire(`${entry}.js`).default.name, // todo this sucks
+          name : split[split.length - 2].split("'")[3], // todo this sucks
           file : `${entry}.js`,
         };
       }
@@ -144,7 +143,7 @@ class RiotTask {
    */
   async _views(files) {
     // Remove views cache directory
-    await fs.remove(`${global.appRoot}/data/cache/riot`);
+    await fs.remove(`${global.appRoot}/data/cache/views`);
 
     // Run gulp
     let job = gulp.src(files);
@@ -165,7 +164,7 @@ class RiotTask {
     }));
 
     // pipe to riot folder
-    job = job.pipe(gulp.dest(`${global.appRoot}/data/cache/riot`));
+    job = job.pipe(gulp.dest(`${global.appRoot}/data/cache/views`));
 
     // Wait for job to end
     await new Promise((resolve, reject) => {

@@ -7,26 +7,12 @@ const Base = require('./base');
  */
 class LayoutStruct extends Base {
   /**
-   * construct default layout struct
-   */
-  constructor() {
-    // run super
-    super();
-
-  }
-
-  /**
    * on before mount
    */
   onBeforeMount(...args) {
-    // return build view
-    return this.__buildView(...args);
-  }
+    // run super
+    super.onBeforeMount(...args);
 
-  /**
-   * on before mount
-   */
-  onBeforeUpdate(...args) {
     // return build view
     return this.__buildView(...args);
   }
@@ -35,8 +21,24 @@ class LayoutStruct extends Base {
    * on before mount
    */
   onBeforeHydrate(...args) {
+    // run super
+    super.onBeforeHydrate(...args);
+
     // return build view
     return this.__buildView(...args);
+  }
+
+  /**
+   * set props
+   *
+   * @param {*} props 
+   */
+  setProps(props) {
+    // build  view
+    this.__buildView(props, this.state);
+
+    // do update
+    this.update(this.state);
   }
 
   /**
@@ -58,6 +60,9 @@ class LayoutStruct extends Base {
     // set state
     this.state = state;
     this.props = props;
+
+    // return true
+    return true;
   }
 }
 

@@ -35,7 +35,7 @@ class RiotDaemon extends Daemon {
         // Alter mount page
         // eslint-disable-next-line no-param-reassign
         r.mount.page = r.mount.page.includes('views') ? `${r.mount.page.split('views')[1].substr(path.sep.length).split(path.sep).join('-').trim()
-          .replace('.tag', '')}-page` : r.mount.page;
+          .replace('.riot', '')}-page` : r.mount.page;
 
         // Alter mount layout
         // eslint-disable-next-line no-param-reassign
@@ -62,7 +62,9 @@ class RiotDaemon extends Daemon {
     const viewName = opts.mount.layout || 'main-layout';
 
     // Render page
-    return await render.default(viewName, this.components[viewName].default, opts);
+    return await render.default(viewName, this.components[viewName].default, Object.assign({}, {
+      isBackend : true,
+    }, opts));
   }
 
   /**
@@ -75,7 +77,9 @@ class RiotDaemon extends Daemon {
    */
   async email(template, opts) {
     // Return render
-    return await render.default(`${template}-email`, this.components[`${template}-email`].default, opts);
+    return await render.default(`${template}-email`, this.components[`${template}-email`].default, Object.assign({}, {
+      isBackend : true,
+    }, opts));
   }
 }
 
