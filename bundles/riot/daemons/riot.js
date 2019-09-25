@@ -1,8 +1,9 @@
 
 // Require dependencies
-const path   = require('path');
-const render = require('@riotjs/ssr');
-const Daemon = require('daemon');
+const path      = require('path');
+const riot      = require('@frontless/riot');
+const Daemon    = require('daemon');
+const { JSDOM } = require('jsdom');
 
 
 /**
@@ -23,7 +24,7 @@ class RiotDaemon extends Daemon {
     this.render = this.render.bind(this);
 
     // Require tags
-    //require('cache/emails'); // eslint-disable-line global-require
+    // require('cache/emails'); // eslint-disable-line global-require
 
     // On render
     if (this.eden.router) {
@@ -61,10 +62,21 @@ class RiotDaemon extends Daemon {
     // view name
     const viewName = opts.mount.layout || 'main-layout';
 
-    // Render page
-    return await render.default(viewName, this.components[viewName].default, Object.assign({}, {
+    // create window
+    const { document, Node } = new JSDOM().window;
+
+    // create root
+    const root = document.createElement('div');
+    document.body.appendChild(root);
+
+    console.log(riot.di({ document, Node }).mount(root, Object.assign({}, {
       isBackend : true,
-    }, opts));
+    }, opts), viewName));
+
+    // return result
+    return riot.di({ document, Node }).mount(root, Object.assign({}, {
+      isBackend : true,
+    }, opts), viewName);
   }
 
   /**

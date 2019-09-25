@@ -4,6 +4,12 @@ const Events = require('events');
 const dotProp = require('dot-prop');
 const EdenStore = require('default/public/js/store');
 
+// add to window
+if (typeof window !== 'undefined') {
+  // set store
+  window.eden = EdenStore;
+}
+
 /**
  * export default layout struct
  */
@@ -20,6 +26,24 @@ class EdenBaseStruct extends Events {
    * on before mount
    */
   onBeforeMount(props, state) {
+    // check props
+    if (props.isBackend) {
+      // set
+      Object.keys(props).forEach((prop) => {
+        // set
+        EdenStore.set(prop, props[prop]);
+      });
+
+      // helpers
+      if (props.helpers) {
+        // helper
+        Object.keys(props.helpers).forEach((helper) => {
+          // set
+          EdenStore.set(helper, props.helpers[helper]);
+        });
+      }
+    }
+
     // setup eden
     this.eden = {
       get  : this.edenGet.bind(this),
@@ -41,8 +65,8 @@ class EdenBaseStruct extends Events {
       /**
        * Sets frontend/backend value
        */
-      backend  : props.isBackend,
-      frontend : !props.isBackend,
+      backend  : !!this.edenGet('isBackend'),
+      frontend : !this.edenGet('isBackend'),
     };
 
     // bind all default methods
@@ -231,35 +255,18 @@ class EdenBaseStruct extends Events {
 
   /**
    * Eden Get
-   *
-   * @param {String} key
    */
-  edenGet(key) {
-    // store
-    if ((this.eden || {}).frontend) {
-      // Return value
-      return this.eden.store.get(key);
-    }
-
-    // get props
-    return dotProp.get(this.edenRoot().props, key);
+  edenGet(...args) {
+    // Return value
+    return EdenStore.get(...args);
   }
 
   /**
-   * Eden Get
-   *
-   * @param {String} key
-   * @param {*} value
+   * Eden Set
    */
-  edenSet(key, value) {
-    // check frontend
-    if ((this.eden || {}).frontend) {
-      // Return value
-      return this.eden.store.set(key, value);
-    }
-
-    // get props
-    return dotProp.set(this.edenRoot().props, key, value);
+  edenSet(...args) {
+    // Return value
+    return EdenStore.set(...args);
   }
 }
 

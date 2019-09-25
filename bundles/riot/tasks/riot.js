@@ -71,28 +71,34 @@ class RiotTask {
         // read file
         const item = await fs.readFile(entry, 'utf8');
 
-        // code/map
-        const { code, map } = await compile(item, {
-          file : entry,
-        });
+        // log
+        try {
+          // code/map
+          const { code, map } = await compile(item, {
+            file : entry,
+          });
 
-        // remove old files
-        await fs.remove(`${entry}.js`);
-        await fs.remove(`${entry}.map`);
+          // remove old files
+          await fs.remove(`${entry}.js`);
+          await fs.remove(`${entry}.map`);
 
-        // write compiled
-        await fs.writeFile(`${entry}.js`, code);
-        await fs.writeFile(`${entry}.map`, JSON.stringify(map));
+          // write compiled
+          await fs.writeFile(`${entry}.js`, code);
+          await fs.writeFile(`${entry}.map`, JSON.stringify(map));
 
-        // split
-        const split = code.split(os.EOL);
+          // split
+          const split = code.split(os.EOL);
 
-        // return compiled
-        return {
-          orig : entry,
-          name : split[split.length - 2].split("'")[3], // todo this sucks
-          file : `${entry}.js`,
-        };
+          // return compiled
+          return {
+            orig : entry,
+            name : split[split.length - 2].split("'")[3], // todo this sucks
+            file : `${entry}.js`,
+          };
+        } catch (e) {
+          // log error
+          console.log(e);
+        }
       }
 
       // return entry
@@ -111,12 +117,11 @@ class RiotTask {
 
     // write files
     await fs.writeFile(`${global.appRoot}/data/cache/view.backend.js`, [
-      "const createRegister = require('@riotjs/ssr/register');",
+      `const riot = require('@frontless/riot');`,
       'const exporting = {};',
-      'const unregister = createRegister();',
       compiledFiles.map((file) => {
         // require original
-        return `exporting['${file.name}'] = require('${file.orig}');`;
+        return `exporting['${file.name}'] = require('${file.file}'); riot.register('${file.name}', exporting['${file.name}']);`;
       }).join(os.EOL),
       'module.exports = exporting;',
     ].join(os.EOL));

@@ -4,6 +4,7 @@
   "version": "4.0.0",
   "dependencies": {
     "@edenjs/glob": "^1.0.0",
+    "@frontless/riot": "^4.5.1",
     "@riotjs/compiler": "^4.3.5",
     "@riotjs/hydrate": "^4.0.0",
     "@riotjs/ssr": "^4.1.0",
@@ -14,6 +15,7 @@
     "gulp-rename": "^1.4.0",
     "gulp-riot": "^1.1.5",
     "gulp-sourcemaps": "^2.6.5",
+    "jsdom": "^15.1.1",
     "riot": "^4.3.5"
   },
   "engines": {
