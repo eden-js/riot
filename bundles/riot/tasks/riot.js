@@ -108,7 +108,7 @@ class RiotTask {
     // return backend
     const output = compiledFiles.map((entry) => {
       // return riot register
-      return `exporting['${entry.name}'] = require('${entry.file}').default; riot.register('${entry.name}', exporting['${entry.name}']);`;
+      return `exporting['${entry.name}'] = require('${entry.file}').default; if (exporting['${entry.name}']) { riot.register('${entry.name}', exporting['${entry.name}']); }`;
     }).join(os.EOL);
 
     // write file

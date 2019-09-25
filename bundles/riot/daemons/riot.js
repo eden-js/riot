@@ -66,7 +66,7 @@ class RiotDaemon extends Daemon {
     const { document, Node } = new JSDOM().window;
 
     // create root
-    const root = document.createElement('div');
+    const root = document.createElement(viewName);
 
     // return result
     await riot.di({ document, Node }).mount(root, Object.assign({}, {
