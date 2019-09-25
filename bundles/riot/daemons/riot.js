@@ -67,16 +67,14 @@ class RiotDaemon extends Daemon {
 
     // create root
     const root = document.createElement('div');
-    document.body.appendChild(root);
-
-    console.log(riot.di({ document, Node }).mount(root, Object.assign({}, {
-      isBackend : true,
-    }, opts), viewName));
 
     // return result
-    return riot.di({ document, Node }).mount(root, Object.assign({}, {
+    await riot.di({ document, Node }).mount(root, Object.assign({}, {
       isBackend : true,
     }, opts), viewName);
+
+    // return html
+    return root.outerHTML;
   }
 
   /**
