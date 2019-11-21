@@ -1,9 +1,8 @@
 
 // Require dependencies
-const fs         = require('fs-extra');
-const os         = require('os');
-const gulp       = require('gulp');
-const gulpRename = require('gulp-rename');
+const fs   = require('fs-extra');
+const os   = require('os');
+const path = require('path');
 
 // require dependencies
 const glob        = require('@edenjs/glob');
@@ -27,12 +26,13 @@ class RiotTask {
     // Set private variables
     this._runner = runner;
 
+    // set cache file
+    this._cacheFile = `${global.appRoot}/.edenjs/.cache/riot.json`;
+    this._cachePath = `${global.appRoot}/.edenjs/.riot`;
+
     // Bind methods
     this.run = this.run.bind(this);
     this.watch = this.watch.bind(this);
-
-    // Bind private methods
-    this._views = this._views.bind(this);
   }
 
   /**
@@ -54,56 +54,114 @@ class RiotTask {
     // join head
     head = head.join(os.EOL);
 
-    // Await views
-    await this._views(files);
+    // await cache riot
+    await fs.ensureDir(this._cachePath);
 
-    // get files
-    const entries = await glob([
-      `${global.appRoot}/data/cache/views/js/**/*.js`,
-      `${global.appRoot}/data/cache/views/**/*.riot`,
-      `!${global.appRoot}/data/cache/views/email/**/*.riot`,
-    ]);
+    // create map
+    const map = await glob(files);
+    const parsedMap = await fs.exists(this._cacheFile) ? JSON.parse(await fs.readFile(this._cacheFile, 'utf8')) : {};
 
-    // map files
-    const compiledFiles = (await Promise.all(entries.map(async (entry) => {
-      // compile if riot
-      if (entry.includes('.riot')) {
-        // read file
-        const item = await fs.readFile(entry, 'utf8');
+    // loop map
+    map.forEach((item) => {
+      // add to parsed map
+      let amended = item.replace(/\\/g, '/').split('bundles/');
 
+      // stat sync
+      const stat = fs.statSync(item);
+
+      // Correct path
+      amended = amended.pop();
+      amended = amended.split('views');
+      amended.shift();
+      amended = amended.join('views');
+
+      // set id
+      const id = amended;
+
+      // add to parsed map
+      if (!parsedMap[id]) parsedMap[id] = {};
+
+      // set fields
+      parsedMap[id].id = id;
+      parsedMap[id].path = item;
+      parsedMap[id].mtime = new Date(stat.mtime).getTime();
+    });
+
+    // loop parsed map
+    const compiledFiles = (await Promise.all(Object.values(parsedMap).map(async (item) => {
+      // remove unwanted
+      if (!item.path) {
+        // delete
+        delete parsedMap[item.id];
+
+        // return
+        return;
+      }
+
+      // check mtime
+      if (await fs.exists(`${this._cachePath}${item.id}`) && item.lmtime === item.mtime) {
+        // return item
+        return item.file;
+      }
+
+      // move to path
+      await fs.copy(item.path, `${this._cachePath}${item.id}`);
+
+      // compile riot
+      if (item.path.includes('.riot')) {
         // log
         try {
           // code/map
-          const { code, map } = await compile(item, {
-            file : entry,
+          const { code, map } = await compile(await fs.readFile(item.path, 'utf8'), {
+            file : item.path,
           });
 
+          // set code/map
+          item.map = map;
+          item.code = code;
+
+          // ensure dir
+          await fs.ensureDir(path.dirname(`${this._cachePath}${item.id}`));
+
           // remove old files
-          await fs.remove(`${entry}.js`);
-          await fs.remove(`${entry}.map`);
+          await fs.remove(`${this._cachePath}${item.id}.js`);
+          await fs.remove(`${this._cachePath}${item.id}.map`);
 
           // write compiled
-          await fs.writeFile(`${entry}.js`, code);
-          await fs.writeFile(`${entry}.map`, JSON.stringify(map));
+          await fs.writeFile(`${this._cachePath}${item.id}.js`, code);
+          await fs.writeFile(`${this._cachePath}${item.id}.map`, JSON.stringify(map));
 
           // split
           const split = code.split(os.EOL);
 
-          // return compiled
-          return {
-            orig : entry,
+          // done
+          const done = {
+            orig : item.path,
             name : split[split.length - 2].split("'")[3], // todo this sucks
-            file : `${entry}.js`,
+            file : `${this._cachePath}${item.id}.js`,
           };
+
+          // done
+          item.file = done;
+
+          // set mtime
+          item.lmtime = item.mtime;
+
+          // return compiled
+          return done;
         } catch (e) {
           // log error
+          console.log(`Error compiling ${entry}`);
           console.log(e);
         }
+      } else {
+        // set mtime
+        item.lmtime = item.mtime;
       }
 
-      // return entry
+      // return null
       return null;
-    }))).filter(e => e);
+    }))).filter((f) => f);
 
     // return backend
     const output = compiledFiles.map((entry) => {
@@ -112,11 +170,11 @@ class RiotTask {
     }).join(os.EOL);
 
     // write file
-    await fs.remove(`${global.appRoot}/data/cache/view.backend.js`);
-    await fs.remove(`${global.appRoot}/data/cache/view.frontend.js`);
+    await fs.remove(`${global.appRoot}/.edenjs/.cache/view.backend.js`);
+    await fs.remove(`${global.appRoot}/.edenjs/.cache/view.frontend.js`);
 
     // write files
-    await fs.writeFile(`${global.appRoot}/data/cache/view.backend.js`, [
+    await fs.writeFile(`${global.appRoot}/.edenjs/.cache/view.backend.js`, [
       `const riot = require('@frontless/riot');`,
       'const exporting = {};',
       compiledFiles.map((file) => {
@@ -125,7 +183,10 @@ class RiotTask {
       }).join(os.EOL),
       'module.exports = exporting;',
     ].join(os.EOL));
-    await fs.writeFile(`${global.appRoot}/data/cache/view.frontend.js`, `${head}${os.EOL}const exporting = {};${os.EOL}${output}${os.EOL}module.exports = exporting;`);
+    await fs.writeFile(`${global.appRoot}/.edenjs/.cache/view.frontend.js`, `${head}${os.EOL}const exporting = {};${os.EOL}${output}${os.EOL}module.exports = exporting;`);
+
+    // write file
+    await fs.writeFile(this._cacheFile, JSON.stringify(parsedMap));
   }
 
   /**
@@ -136,46 +197,6 @@ class RiotTask {
   watch() {
     // Return files
     return ['views/js/**/*', 'views/**/*.riot'];
-  }
-
-  /**
-   * Run riot views
-   *
-   * @param {Array} files
-   *
-   * @return {Promise}
-   * @private
-   */
-  async _views(files) {
-    // Remove views cache directory
-    await fs.remove(`${global.appRoot}/data/cache/views`);
-
-    // Run gulp
-    let job = gulp.src(files);
-
-    // pipe rename
-    job = job.pipe(gulpRename((filePath) => {
-      // Get amended
-      let amended = filePath.dirname.replace(/\\/g, '/').split('bundles/');
-
-      // Correct path
-      amended = amended.pop();
-      amended = amended.split('views');
-      amended.shift();
-      amended = amended.join('views');
-
-      // Alter amended
-      filePath.dirname = amended; // eslint-disable-line no-param-reassign
-    }));
-
-    // pipe to riot folder
-    job = job.pipe(gulp.dest(`${global.appRoot}/data/cache/views`));
-
-    // Wait for job to end
-    await new Promise((resolve, reject) => {
-      job.once('end', resolve);
-      job.once('error', reject);
-    });
   }
 }
 

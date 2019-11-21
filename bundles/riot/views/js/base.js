@@ -14,18 +14,33 @@ if (typeof window !== 'undefined') {
  * export default layout struct
  */
 class EdenBaseStruct extends Events {
-  onMounted() {}
+  onMounted() {
+    // unmount
+    this.emit('mount', true);
 
-  onUpdated() {}
+    // props ref
+    if (this.props.ref && typeof this.props.ref === 'function') {
+      // set ref
+      this.props.ref(this);
+    }
+  }
+
+  onUpdated() {
+    // unmount
+    this.emit('update', true);
+  }
 
   onBeforeHydrate() {}
 
-  onBeforeUnmount() {}
+  onBeforeUnmount() {
+    // unmount
+    this.emit('unmount', true);
+  }
 
   /**
    * on before mount
    */
-  onBeforeMount(props, state) {
+  onBeforeMount(props = {}, state = {}) {
     // check props
     if (props.isBackend) {
       // set
@@ -46,6 +61,7 @@ class EdenBaseStruct extends Events {
 
     // setup eden
     this.eden = {
+      on   : this.edenOn.bind(this),
       get  : this.edenGet.bind(this),
       set  : this.edenSet.bind(this),
       root : this.edenRoot.bind(this),
@@ -76,7 +92,7 @@ class EdenBaseStruct extends Events {
     this.loading = this.loading.bind(this);
 
     // set refs
-    this.refs = new Map();
+    this.refs = this.refs || {};
 
     // props
     this.props = props;
@@ -115,10 +131,13 @@ class EdenBaseStruct extends Events {
    * @param {String} type
    */
   ref(type) {
+    // that
+    const that = this;
+
     // return created fucntion
     return (ref) => {
       // set ref
-      this.refs[type] = ref;
+      that.refs[type] = ref;
     };
   }
 
@@ -251,6 +270,14 @@ class EdenBaseStruct extends Events {
 
     // Return parent
     return parent;
+  }
+
+  /**
+   * Eden Get
+   */
+  edenOn(...args) {
+    // Return value
+    return EdenStore.on(...args);
   }
 
   /**

@@ -13,6 +13,9 @@ class LayoutStruct extends Base {
     // run super
     super.onBeforeMount(...args);
 
+    // build view
+    this.__buildView = this.__buildView.bind(this);
+
     // return build view
     return this.__buildView(...args);
   }
