@@ -2,7 +2,7 @@
 // import events
 const Events = require('events');
 const dotProp = require('dot-prop');
-const EdenStore = require('default/public/js/store');
+const EdenStore = require('core/public/js/store');
 
 // add to window
 if (typeof window !== 'undefined') {

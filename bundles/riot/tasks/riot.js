@@ -1,13 +1,6 @@
-
-// Require dependencies
-const fs   = require('fs-extra');
-const os   = require('os');
-const path = require('path');
-
 // require dependencies
-const glob        = require('@edenjs/glob');
-const config      = require('config');
-const { compile } = require('@riotjs/compiler');
+const babel  = require('@babel/core');
+const config = require('config');
 
 /**
  * Build riot task class
@@ -41,9 +34,61 @@ class RiotTask {
    * @return {Promise}
    */
   async run(files) {
+    // set opts
+    const opts = {
+      files,
+
+      babel    : require.resolve('@babel/core'),
+      include  : config.get('view.include') || {},
+      compiler : require.resolve('@riotjs/compiler'),
+
+      appRoot : global.appRoot,
+
+      cachePath  : this._cachePath,
+      cacheFile  : this._cacheFile,
+      sourceMaps : config.get('environment') === 'dev' && !config.get('noSourcemaps'),
+    };
+
+    // return runner
+    await this._runner.thread(this.thread, opts, false, async (c) => {
+      // notice that buble.transform returns {code, map}
+      c.code = (await babel.transform(c.code, {
+        sourceMaps     : false,
+        // notice that whitelines should be preserved
+        retainLines    : true,
+        presets        : [[
+          '@babel/env',
+          {
+            targets : {
+              esmodules : true,
+            },
+          },
+        ]],
+      })).code;
+
+      // changed
+      this._runner.emit('riot.hot', c);
+    });
+  }
+
+  /**
+   * Run riot task
+   *
+   * @return {Promise}
+   */
+  async thread(data, emitEvent) {
+    // Require dependencies
+    const fs   = require('fs-extra');
+    const os   = require('os');
+    const glob = require('@edenjs/glob');
+    const path = require('path');
+
+    // require dependencies
+    const { compile } = require(data.compiler);
+
     // Create header
-    let head      = ['// AUTOMATICALLY GENERATED EDENJS VIEW ENGINE //', ''];
-    const include = config.get('view.include') || {};
+    let head          = ['// AUTOMATICALLY GENERATED EDENJS VIEW ENGINE //', '', 'const exporting = {};'];
+    const { include } = data;
 
     // Loop include
     Object.keys(include).forEach((key) => {
@@ -55,14 +100,14 @@ class RiotTask {
     head = head.join(os.EOL);
 
     // await cache riot
-    await fs.ensureDir(this._cachePath);
+    await fs.ensureDir(data.cachePath);
 
     // create map
-    const map = await glob(files);
-    const parsedMap = await fs.exists(this._cacheFile) ? JSON.parse(await fs.readFile(this._cacheFile, 'utf8')) : {};
+    const parsedMap = await fs.exists(data.cacheFile) ? JSON.parse(await fs.readFile(data.cacheFile, 'utf8')) : {};
+    const mappedFiles = await glob(data.files);
 
     // loop map
-    map.forEach((item) => {
+    mappedFiles.forEach((item) => {
       // add to parsed map
       let amended = item.replace(/\\/g, '/').split('bundles/');
 
@@ -99,13 +144,13 @@ class RiotTask {
       }
 
       // check mtime
-      if (await fs.exists(`${this._cachePath}${item.id}`) && item.lmtime === item.mtime) {
+      if (await fs.exists(`${data.cachePath}${item.id}`) && item.lmtime === item.mtime) {
         // return item
         return item.file;
       }
 
       // move to path
-      await fs.copy(item.path, `${this._cachePath}${item.id}`);
+      await fs.copy(item.path, `${data.cachePath}${item.id}`);
 
       // compile riot
       if (item.path.includes('.riot')) {
@@ -121,15 +166,15 @@ class RiotTask {
           item.code = code;
 
           // ensure dir
-          await fs.ensureDir(path.dirname(`${this._cachePath}${item.id}`));
+          await fs.ensureDir(path.dirname(`${data.cachePath}${item.id}`));
 
           // remove old files
-          await fs.remove(`${this._cachePath}${item.id}.js`);
-          await fs.remove(`${this._cachePath}${item.id}.map`);
+          await fs.remove(`${data.cachePath}${item.id}.js`);
+          await fs.remove(`${data.cachePath}${item.id}.map`);
 
           // write compiled
-          await fs.writeFile(`${this._cachePath}${item.id}.js`, code);
-          await fs.writeFile(`${this._cachePath}${item.id}.map`, JSON.stringify(map));
+          await fs.writeFile(`${data.cachePath}${item.id}.js`, code);
+          await fs.writeFile(`${data.cachePath}${item.id}.map`, JSON.stringify(map));
 
           // split
           const split = code.split(os.EOL);
@@ -138,8 +183,14 @@ class RiotTask {
           const done = {
             orig : item.path,
             name : split[split.length - 2].split("'")[3], // todo this sucks
-            file : `${this._cachePath}${item.id}.js`,
+            file : `${data.cachePath}${item.id}.js`,
           };
+
+          // push to changed
+          emitEvent({
+            code,
+            ...done,
+          });
 
           // done
           item.file = done;
@@ -151,7 +202,7 @@ class RiotTask {
           return done;
         } catch (e) {
           // log error
-          console.log(`Error compiling ${entry}`);
+          console.log(`Error compiling ${item.id}`);
           console.log(e);
         }
       } else {
@@ -161,7 +212,7 @@ class RiotTask {
 
       // return null
       return null;
-    }))).filter((f) => f);
+    }))).filter(f => f);
 
     // return backend
     const output = compiledFiles.map((entry) => {
@@ -170,12 +221,12 @@ class RiotTask {
     }).join(os.EOL);
 
     // write file
-    await fs.remove(`${global.appRoot}/.edenjs/.cache/view.backend.js`);
-    await fs.remove(`${global.appRoot}/.edenjs/.cache/view.frontend.js`);
+    await fs.remove(`${data.appRoot}/.edenjs/.cache/view.backend.js`);
+    await fs.remove(`${data.appRoot}/.edenjs/.cache/view.frontend.js`);
 
     // write files
-    await fs.writeFile(`${global.appRoot}/.edenjs/.cache/view.backend.js`, [
-      `const riot = require('@frontless/riot');`,
+    await fs.writeFile(`${data.appRoot}/.edenjs/.cache/view.backend.js`, [
+      'const riot = require(\'@frontless/riot\');',
       'const exporting = {};',
       compiledFiles.map((file) => {
         // require original
@@ -183,10 +234,13 @@ class RiotTask {
       }).join(os.EOL),
       'module.exports = exporting;',
     ].join(os.EOL));
-    await fs.writeFile(`${global.appRoot}/.edenjs/.cache/view.frontend.js`, `${head}${os.EOL}const exporting = {};${os.EOL}${output}${os.EOL}module.exports = exporting;`);
+    await fs.writeFile(`${data.appRoot}/.edenjs/.cache/view.frontend.js`, `${head}${os.EOL}${output}${os.EOL}module.exports = exporting;`);
 
     // write file
-    await fs.writeFile(this._cacheFile, JSON.stringify(parsedMap));
+    await fs.writeFile(data.cacheFile, JSON.stringify(parsedMap));
+
+    // return
+    return true;
   }
 
   /**

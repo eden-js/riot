@@ -1,15 +1,26 @@
 
 // Require local dependencies
 const riot    = require('riot');
-const store   = require('default/public/js/store');
+const store   = require('core/public/js/store');
 const events  = require('events');
+const socket  = require('socket/public/js/bootstrap');
+const reload  = require('@riotjs/hot-reload');
 const hydrate = require('@riotjs/hydrate');
+
+// shim required
+const shimRequired = {};
+
+// require default bases
+shimRequired['/js/base'] = require('.edenjs/.riot/js/base.js');
+shimRequired['/js/user'] = require('.edenjs/.riot/js/user.js');
+shimRequired['/js/model'] = require('.edenjs/.riot/js/model.js');
+shimRequired['/js/layout'] = require('.edenjs/.riot/js/layout.js');
 
 // Add riot to window
 window.riot = riot;
 
 // Require tags
-const tags = require(`.edenjs/.cache/view.frontend.js`);
+const tags = require('.edenjs/.cache/view.frontend.js');
 
 /**
  * Build riot frontend class
@@ -23,12 +34,62 @@ class RiotFrontend extends events {
     super(...args);
 
     // Bind methods
+    this._hot = this._hot.bind(this);
     this._mount = this._mount.bind(this);
     this._layout = this._layout.bind(this);
 
     // Frontend hooks
     store.on('layout', this._layout);
     store.on('initialize', this._mount);
+
+    // Dev hooks
+    socket.on('dev:riot.hot', this._hot);
+  }
+
+  /**
+   * Hot reload riot
+   *
+   * @param {*} data
+   */
+  _hot(data) {
+    // check data
+    window.rfile = data;
+
+    // try/catch
+    try {
+      // replace require
+      window.shimRequire = (str) => {
+        // try/catch
+        try {
+          // return require
+          return require(str);
+        } catch (e) {}
+
+        // check str
+        if (Object.keys(shimRequired).find((s) => str.includes(s))) {
+          // return shimmed
+          return shimRequired[Object.keys(shimRequired).find((s) => str.includes(s))];
+        }
+
+        // throw error
+        throw new Error('cannot find shim file to require');
+      };
+
+      // eval component
+      const Component = eval(data.code.split('require(').join('shimRequire('));
+
+      // reload component
+      reload.default(Component);
+    } catch (e) {
+      // log error
+      console.log(e);
+
+      // check change
+      eden.alert.info('Reloading with change');
+
+      // can't reload automatically
+      setTimeout(() => window.location.reload(), 5000);
+    }
   }
 
   /**

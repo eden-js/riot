@@ -1,0 +1,17 @@
+<error-page>
+  <div class="error-page">
+    <div class="alert alert-danger" role="alert">
+      <h4 class="alert-heading">Error!</h4>
+
+      <hr if={ props.message }>
+
+      <p if={ props.message }>
+        <b>{ props.message }</b>
+      </p>
+
+      <p if={ props.trace }>
+        <div each={ line, i in props.trace } class="ml-2">{ line }</div>
+      </p>
+    </div>
+  </div>
+</error-page>
