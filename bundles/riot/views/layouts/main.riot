@@ -14,14 +14,16 @@
     </div>
   </nav>
 
-  <div data-is={ this.view } opts={ this.state } ref="page" class="main-page" />
+  <div ref={ ref('page') } is={ state.view } { ...state } class="main-page" />
 
   <toast />
 
   <script>
+    // import layout
+    import Layout from '../js/layout';
 
     // export default
-    export default class MainLayout extends Base {
+    export default class MainLayout extends Layout {
       /**
        * on before mount
        */
