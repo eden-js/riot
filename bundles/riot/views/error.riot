@@ -10,7 +10,7 @@
       </p>
 
       <p if={ props.trace }>
-        <div each={ line, i in props.trace } class="ml-2">{ line }</div>
+        <div each={ (line, i) in props.trace } class="ml-2">{ line }</div>
       </p>
     </div>
   </div>
