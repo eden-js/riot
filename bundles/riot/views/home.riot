@@ -2,7 +2,7 @@
   <section class="jumbotron text-xs-center">
     <div class="container">
       <h1 class="display-3 mb-4">
-        Welcome to { this.eden.get('config.title') }
+        Welcome to { eden.get('config.title') }
       </h1>
 
       <p class="lead text-muted mb-5">
@@ -16,4 +16,12 @@
       </p>
     </div>
   </section>
+
+  <script>
+    // import base
+    import Base from './js/base';
+
+    // export default
+    export default class HomePage extends Base {}
+  </script>
 </home-page>
