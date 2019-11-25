@@ -1,7 +1,7 @@
 {
   "name": "@edenjs/riot",
   "description": "",
-  "version": "4.0.3",
+  "version": "4.0.4",
   "dependencies": {
     "@edenjs/glob": "^1.0.0",
     "@frontless/riot": "^4.5.1",
