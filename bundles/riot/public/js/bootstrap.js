@@ -52,8 +52,8 @@ class RiotFrontend extends events {
    * @param {*} data
    */
   _hot(data) {
-    // check data
-    window.rfile = data;
+    // check change
+    eden.alert.info(`Reloading ${data.file}`);
 
     // try/catch
     try {
@@ -80,12 +80,15 @@ class RiotFrontend extends events {
 
       // reload component
       reload.default(Component);
+
+      // check change
+      eden.alert.success(`Reloaded ${data.file}`);
     } catch (e) {
       // log error
       console.log(e);
 
       // check change
-      eden.alert.info('Reloading with change');
+      eden.alert.error('Refreshing with change');
 
       // can't reload automatically
       setTimeout(() => window.location.reload(), 5000);

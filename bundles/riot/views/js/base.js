@@ -23,11 +23,23 @@ class EdenBaseStruct extends Events {
       // set ref
       this.props.ref(this);
     }
+
+    // do refs
+    this.$$('[ref]').forEach((ref) => {
+      // set to refs
+      if (!ref.getAttribute('ref').includes('that.refs')) this.refs[ref.getAttribute('ref')] = ref;
+    });
   }
 
   onUpdated() {
     // unmount
     this.emit('update', true);
+
+    // do refs
+    this.$$('[ref]').forEach((ref) => {
+      // set to refs
+      if (!ref.getAttribute('ref').includes('that.refs')) this.refs[ref.getAttribute('ref')] = ref;
+    });
   }
 
   onBeforeHydrate() {}
