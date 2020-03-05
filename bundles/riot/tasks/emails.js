@@ -1,15 +1,16 @@
 // require dependencies
+const babel  = require('@babel/core');
 const config = require('config');
 
 /**
- * Build riot task class
+ * Build email task class
  *
- * @task     email
+ * @task     emails
  * @priority 1
  */
 class RiotTask {
   /**
-   * Construct riot task class
+   * Construct email task class
    *
    * @param {gulp} gulp
    */
@@ -18,8 +19,8 @@ class RiotTask {
     this._runner = runner;
 
     // set cache file
-    this._cacheFile = `${global.appRoot}/.edenjs/.cache/email.json`;
-    this._cachePath = `${global.appRoot}/.edenjs/.riot-emails`;
+    this._cacheFile = `${global.appRoot}/.edenjs/.cache/riot-email.json`;
+    this._cachePath = `${global.appRoot}/.edenjs/.riot-email`;
 
     // Bind methods
     this.run = this.run.bind(this);
@@ -36,17 +37,37 @@ class RiotTask {
     const opts = {
       files,
 
+      babel    : require.resolve('@babel/core'),
       include  : config.get('view.include') || {},
       compiler : require.resolve('@riotjs/compiler'),
 
       appRoot : global.appRoot,
 
-      cachePath : this._cachePath,
-      cacheFile : this._cacheFile,
+      cachePath  : this._cachePath,
+      cacheFile  : this._cacheFile,
+      sourceMaps : config.get('environment') === 'dev' && !config.get('noSourcemaps'),
     };
 
     // return runner
-    return this._runner.thread(this.thread, opts);
+    await this._runner.thread(this.thread, opts, false, async (c) => {
+      // notice that buble.transform returns {code, map}
+      c.code = (await babel.transform(c.code, {
+        sourceMaps     : false,
+        // notice that whitelines should be preserved
+        retainLines    : true,
+        presets        : [[
+          '@babel/env',
+          {
+            targets : {
+              esmodules : true,
+            },
+          },
+        ]],
+      })).code;
+
+      // changed
+      this._runner.emit('riot.hot', c);
+    });
   }
 
   /**
@@ -54,18 +75,18 @@ class RiotTask {
    *
    * @return {Promise}
    */
-  async thread(data) {
+  async thread(data, emitEvent) {
     // Require dependencies
     const fs   = require('fs-extra');
     const os   = require('os');
+    const glob = require('@edenjs/glob');
     const path = require('path');
 
     // require dependencies
-    const glob        = require('@edenjs/glob');
     const { compile } = require(data.compiler);
 
     // Create header
-    let head          = ['// AUTOMATICALLY GENERATED EDENJS VIEW ENGINE //', ''];
+    let head          = ['// AUTOMATICALLY GENERATED EDENJS VIEW ENGINE //', '', 'const exporting = {};'];
     const { include } = data;
 
     // Loop include
@@ -81,11 +102,11 @@ class RiotTask {
     await fs.ensureDir(data.cachePath);
 
     // create map
-    const map = await glob(data.files);
     const parsedMap = await fs.exists(data.cacheFile) ? JSON.parse(await fs.readFile(data.cacheFile, 'utf8')) : {};
+    const mappedFiles = await glob(data.files);
 
     // loop map
-    map.forEach((item) => {
+    mappedFiles.forEach((item) => {
       // add to parsed map
       let amended = item.replace(/\\/g, '/').split('bundles/');
 
@@ -94,9 +115,9 @@ class RiotTask {
 
       // Correct path
       amended = amended.pop();
-      amended = amended.split('views');
+      amended = amended.split('emails');
       amended.shift();
-      amended = amended.join('views');
+      amended = amended.join('emails');
 
       // set id
       const id = amended;
@@ -174,7 +195,7 @@ class RiotTask {
           return done;
         } catch (e) {
           // log error
-          console.log(`Error compiling ${entry}`);
+          console.log(`Error compiling ${item.id}`);
           console.log(e);
         }
       } else {
@@ -184,14 +205,14 @@ class RiotTask {
 
       // return null
       return null;
-    }))).filter((f) => f);
+    }))).filter(f => f);
 
     // write file
-    await fs.remove(`${data.appRoot}/.edenjs/.cache/view.email.js`);
+    await fs.remove(`${data.appRoot}/.edenjs/.cache/email.backend.js`);
 
     // write files
-    await fs.writeFile(`${data.appRoot}/.edenjs/.cache/view.email.js`, [
-      `const riot = require('@frontless/riot');`,
+    await fs.writeFile(`${data.appRoot}/.edenjs/.cache/email.backend.js`, [
+      'const riot = require(\'@frontless/riot\');',
       'const exporting = {};',
       compiledFiles.map((file) => {
         // require original
@@ -202,6 +223,9 @@ class RiotTask {
 
     // write file
     await fs.writeFile(data.cacheFile, JSON.stringify(parsedMap));
+
+    // return
+    return true;
   }
 
   /**
@@ -211,7 +235,7 @@ class RiotTask {
    */
   watch() {
     // Return files
-    return ['emails/**/*.riot'];
+    return ['emails/js/**/*', 'emails/**/*.riot'];
   }
 }
 

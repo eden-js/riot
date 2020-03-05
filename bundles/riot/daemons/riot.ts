@@ -33,6 +33,7 @@ export default class RiotDaemon extends Daemon {
       this.eden.router.app.set('view engine', 'riot');
 
       // require tags for router threads
+      this.emails = require(`.edenjs/.cache/email.backend.js`); // eslint-disable-line global-require
       this.components = require(`.edenjs/.cache/view.backend.js`); // eslint-disable-line global-require
 
       // add pre for router only threads
@@ -91,7 +92,10 @@ export default class RiotDaemon extends Daemon {
    */
   async email(template, opts) {
     // Return render
-    return await render.default(`${template}-email`, this.components[`${template}-email`].default, Object.assign({}, {
+    return await this.render(Object.assign({}, {
+      mount : {
+        layout : `${template}-email`,
+      },
       isBackend : true,
     }, opts));
   }
