@@ -15,6 +15,9 @@ if (typeof window !== 'undefined') {
  */
 class EdenBaseStruct extends Events {
   onMounted() {
+    // check mounted
+    this.mounted = true;
+
     // unmount
     this.emit('mount', true);
 
@@ -45,6 +48,9 @@ class EdenBaseStruct extends Events {
   onBeforeHydrate() {}
 
   onBeforeUnmount() {
+    // check mounted
+    this.mounted = false;
+
     // unmount
     this.emit('unmount', true);
   }
@@ -70,6 +76,12 @@ class EdenBaseStruct extends Events {
         });
       }
     }
+
+    // replace update
+    this.safeUpdate = (...args) => {
+      if (this.mounted) this.update(...args);
+    };
+    this.safeUpdate = this.safeUpdate.bind(this);
 
     // setup eden
     this.eden = {
