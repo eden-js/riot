@@ -34,38 +34,52 @@ class LayoutStruct extends Base {
   /**
    * set props
    *
-   * @param {*} props 
+   * @param {*} props
    */
   setProps(props) {
     // build  view
     this.__buildView(props, this.state);
-
-    // do update
-    this.update(this.state);
   }
 
   /**
    * builds view
    *
-   * @param {Object} props 
-   * @param {Object} state 
+   * @param {Object} props
+   * @param {Object} state
    */
   __buildView(props, state) {
     // Reset opts if includes state
     const newState = props.state ? props.state : this.state;
     newState.view = props.mount.page;
 
-    // set state
-    Object.keys(newState).forEach((key) => {
-      state[key] = newState[key];
-    });
+    // complete setup
+    const complete = () => {
+      // set state
+      Object.keys(newState).forEach((key) => {
+        state[key] = newState[key];
+      });
 
-    // set state
-    this.state = state;
-    this.props = props;
+      // set state
+      this.state = state;
+      this.props = props;
 
-    // return true
-    return true;
+      // update
+      this.safeUpdate(this.state);
+    };
+
+    // check view
+    if (!this.state.view) {
+      return complete();
+    }
+
+    // set state loading
+    this.state.view = 'loading-page';
+
+    // update
+    this.safeUpdate(this.state);
+
+    // until next tick
+    setTimeout(complete, 0);
   }
 }
 
