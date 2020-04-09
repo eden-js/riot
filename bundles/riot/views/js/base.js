@@ -119,7 +119,6 @@ class EdenBaseStruct extends Events {
     this.refs = this.refs || {};
 
     // props
-    this.props = props;
     this.state = state;
 
     // create loading
@@ -137,7 +136,6 @@ class EdenBaseStruct extends Events {
    */
   onBeforeUpdate(props, state) {
     // props
-    this.props = props;
     this.state = state;
 
     // props ref

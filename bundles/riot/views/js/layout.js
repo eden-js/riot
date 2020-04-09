@@ -61,7 +61,6 @@ class LayoutStruct extends Base {
 
       // set state
       this.state = state;
-      this.props = props;
 
       // update
       this.safeUpdate(this.state);
