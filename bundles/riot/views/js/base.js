@@ -89,6 +89,12 @@ class EdenBaseStruct extends Events {
       get  : this.edenGet.bind(this),
       set  : this.edenSet.bind(this),
       root : this.edenRoot.bind(this),
+      
+      /**
+       * remove
+       */
+      removeListener         : this.edenRemoveListener.bind(this),
+      edenRemoveAllListeners : this.edenRemoveAllListeners.bind(this),
 
       /**
        * Helper methods
@@ -316,6 +322,22 @@ class EdenBaseStruct extends Events {
   edenSet(...args) {
     // Return value
     return EdenStore.set(...args);
+  }
+
+  /**
+   * Eden Set
+   */
+  edenRemoveListener(...args) {
+    // Return value
+    return EdenStore.removeListener(...args);
+  }
+
+  /**
+   * Eden Set
+   */
+  edenRemoveAllListeners(...args) {
+    // Return value
+    return EdenStore.removeAllListeners(...args);
   }
 }
 

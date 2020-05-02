@@ -1,6 +1,5 @@
 
 // Require dependencies
-import path      from 'path';
 import riot      from '@frontless/riot';
 import Daemon    from 'daemon';
 import { JSDOM } from 'jsdom';
@@ -28,24 +27,19 @@ export default class RiotDaemon extends Daemon {
 
     // On render
     if (this.eden.router) {
-      // Set view engine
-      this.eden.router.app.set('views', `${global.appRoot}/.edenjs/.riot`);
-      this.eden.router.app.set('view engine', 'riot');
-
       // require tags for router threads
       this.emails = require(`.edenjs/.cache/email.backend.js`); // eslint-disable-line global-require
       this.components = require(`.edenjs/.cache/view.backend.js`); // eslint-disable-line global-require
 
       // add pre for router only threads
-      this.eden.pre('view.compile', (r) => {
+      this.eden.pre('view.compile', ({ render }) => {
         // Alter mount page
         // eslint-disable-next-line no-param-reassign
-        r.mount.page = r.mount.page.includes('.riot') ? `${r.mount.page.split('.riot')[1].substr(path.sep.length).split(path.sep).join('-').trim()
-          .replace('.riot', '')}-page` : r.mount.page;
+        render.mount.page = `${render.mount.page}-page`.split('/').join('-');
 
         // Alter mount layout
         // eslint-disable-next-line no-param-reassign
-        r.mount.layout = r.mount.layout.includes('-layout') ? r.mount.layout : `${r.mount.layout}-layout`;
+        render.mount.layout = (render.mount.layout.includes('-layout') ? render.mount.layout : `${render.mount.layout}-layout`).split('/').join('-');
       });
 
       // set view for router threads
