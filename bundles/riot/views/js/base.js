@@ -14,7 +14,15 @@ if (typeof window !== 'undefined') {
  * export default layout struct
  */
 class EdenBaseStruct extends Events {
-  onMounted() {
+  /**
+   * on mounted
+   *
+   * @param  {...any} args
+   */
+  onMounted(...args) {
+    // run in super
+    if (super.onMounted) super.onMounted(...args);
+
     // check mounted
     this.mounted = true;
 
@@ -34,7 +42,15 @@ class EdenBaseStruct extends Events {
     });
   }
 
-  onUpdated() {
+  /**
+   * on updated
+   *
+   * @param  {...any} args
+   */
+  onUpdated(...args) {
+    // run in super
+    if (super.onUpdated) super.onUpdated(...args);
+
     // unmount
     this.emit('update', true);
 
@@ -45,9 +61,25 @@ class EdenBaseStruct extends Events {
     });
   }
 
-  onBeforeHydrate() {}
+  /**
+   * on before hydrate
+   *
+   * @param  {...any} args 
+   */
+  onBeforeHydrate(...args) {
+    // run in super
+    this.onBeforeMount(...args);
+  }
 
-  onBeforeUnmount() {
+  /**
+   * on before unmount
+   *
+   * @param  {...any} args 
+   */
+  onBeforeUnmount(...args) {
+    // run in super
+    if (super.onBeforeUnmount) super.onBeforeUnmount(...args);
+
     // check mounted
     this.mounted = false;
 
@@ -59,6 +91,9 @@ class EdenBaseStruct extends Events {
    * on before mount
    */
   onBeforeMount(props = {}, state = {}) {
+    // run in super
+    if (super.onBeforeMount) super.onBeforeMount(props, state);
+
     // check props
     if (props.isBackend) {
       // set
@@ -89,7 +124,7 @@ class EdenBaseStruct extends Events {
       get  : this.edenGet.bind(this),
       set  : this.edenSet.bind(this),
       root : this.edenRoot.bind(this),
-      
+
       /**
        * remove
        */
@@ -138,10 +173,15 @@ class EdenBaseStruct extends Events {
   }
 
   /**
-   * on before mount
+   * on before update
+   *
+   * @param  {...any} args 
    */
-  onBeforeUpdate(props, state) {
-    // props
+  onBeforeUpdate(props, state, ...args) {
+    // run in super
+    if (super.onBeforeUpdate) super.onBeforeUpdate(props, state, ...args);
+
+    // set state
     this.state = state;
 
     // props ref
