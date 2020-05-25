@@ -42,6 +42,9 @@ class RiotFrontend extends events {
     store.on('layout', this._layout);
     store.on('initialize', this._mount);
 
+    // check environment
+    if (store.get('config.environment') !== 'dev') return;
+
     // Dev hooks
     socket.on('dev:riot.hot', this._hot);
   }
