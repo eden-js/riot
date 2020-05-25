@@ -67,7 +67,7 @@ class RiotTask {
       })).code;
 
       // changed
-      this._runner.emit('riot.hot', c);
+      if (config.get('environment') === 'dev') this._runner.emit('riot.hot', c);
     });
   }
 
