@@ -5,7 +5,7 @@
   "dependencies": {
     "@edenjs/glob": "^1.0.0",
     "@frontless/riot": "^4.5.1",
-    "@riotjs/compiler": "^4.10.1",
+    "@riotjs/compiler": "^4.11.0",
     "@riotjs/hot-reload": "^4.0.1",
     "@riotjs/hydrate": "^4.0.1",
     "@riotjs/ssr": "^5.0.0",
@@ -18,7 +18,7 @@
     "gulp-riot": "^1.1.5",
     "gulp-sourcemaps": "^2.6.5",
     "jsdom": "^16.4.0",
-    "riot": "^4.13.5"
+    "riot": "^4.14.0"
   },
   "engines": {
     "node": ">= 8.0.0"
@@ -39,7 +39,7 @@
   "homepage": "https://github.com/eden-js/riot#readme",
   "devDependencies": {
     "@edenjs/eslint-config-eden": "^2.0.14",
-    "eslint": "^7.7.0",
+    "eslint": "^7.8.1",
     "eslint-config-airbnb": "^18.2.0",
     "eslint-plugin-import": "^2.22.0",
     "eslint-plugin-jsx-a11y": "^6.3.1",
