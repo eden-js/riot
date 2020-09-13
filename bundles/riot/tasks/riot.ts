@@ -1,23 +1,22 @@
-// require dependencies
-const babel  = require('@babel/core');
-const config = require('config');
+// import babel
+const babel = require('@babel/core');
 
 /**
  * Build riot task class
  *
  * @task     riot
- * @after    javascript
- * @priority 1
+ * @parent   javascript
+ * @priority 1000
  */
-class RiotTask {
+export default class RiotTask {
   /**
    * Construct riot task class
    *
    * @param {gulp} gulp
    */
-  constructor(runner) {
+  constructor(cli) {
     // Set private variables
-    this._runner = runner;
+    this.cli = cli;
 
     // set cache file
     this._cacheFile = `${global.appRoot}/.edenjs/.cache/riot.json`;
@@ -36,21 +35,18 @@ class RiotTask {
   async run(files) {
     // set opts
     const opts = {
-      files,
-
-      babel    : require.resolve('@babel/core'),
-      include  : config.get('view.include') || {},
-      compiler : require.resolve('@riotjs/compiler'),
-
-      appRoot : global.appRoot,
-
+      files      : files.reverse(),
+      babel      : require.resolve('@babel/core'),
+      appRoot    : global.appRoot,
+      include    : this.cli.get('config.frontend.riot.include', []) || {},
+      compiler   : require.resolve('@riotjs/compiler'),
       cachePath  : this._cachePath,
       cacheFile  : this._cacheFile,
-      sourceMaps : config.get('environment') === 'dev' && !config.get('noSourcemaps'),
+      sourceMaps : this.cli.get('config.environment') === 'dev',
     };
 
     // return runner
-    await this._runner.thread(this.thread, opts, false, async (c) => {
+    const count = await this.cli.thread(this.thread, opts, false, async (c) => {
       // notice that buble.transform returns {code, map}
       c.code = (await babel.transform(c.code, {
         sourceMaps     : false,
@@ -67,8 +63,14 @@ class RiotTask {
       })).code;
 
       // changed
-      if (config.get('environment') === 'dev') this._runner.emit('riot.hot', c);
+      if (this.cli.get('config.environment') === 'dev') {
+        // emit hot reload
+        this.cli.emit('hot', 'riot', c);
+      }
     });
+
+    // return counted
+    return `${count.toLocaleString()} riot files compiled!`;
   }
 
   /**
@@ -240,7 +242,7 @@ class RiotTask {
     await fs.writeFile(data.cacheFile, JSON.stringify(parsedMap));
 
     // return
-    return true;
+    return compiledFiles.length;
   }
 
   /**
@@ -248,15 +250,8 @@ class RiotTask {
    *
    * @return {Array}
    */
-  watch() {
+  watch () {
     // Return files
-    return ['views/js/**/*', 'views/**/*.riot'];
+    return '/views/**/*.{riot,js,ts}';
   }
 }
-
-/**
- * Export riot task
- *
- * @type {RiotTask}
- */
-module.exports = RiotTask;

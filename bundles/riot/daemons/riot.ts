@@ -7,6 +7,8 @@ import { JSDOM } from 'jsdom';
 
 /**
  * Build riot dameon class
+ * 
+ * @cluster all
  */
 export default class RiotDaemon extends Daemon {
   /**

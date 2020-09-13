@@ -1,22 +1,18 @@
-// require dependencies
-const babel  = require('@babel/core');
-const config = require('config');
-
 /**
  * Build email task class
  *
- * @task     emails
- * @priority 1
+ * @task emails
+ * @parallel
  */
-class RiotTask {
+export default class EmailTask {
   /**
    * Construct email task class
    *
    * @param {gulp} gulp
    */
-  constructor(runner) {
+  constructor(cli) {
     // Set private variables
-    this._runner = runner;
+    this.cli = cli;
 
     // set cache file
     this._cacheFile = `${global.appRoot}/.edenjs/.cache/riot-email.json`;
@@ -35,39 +31,21 @@ class RiotTask {
   async run(files) {
     // set opts
     const opts = {
-      files,
-
-      babel    : require.resolve('@babel/core'),
-      include  : config.get('view.include') || {},
-      compiler : require.resolve('@riotjs/compiler'),
-
-      appRoot : global.appRoot,
-
+      files      : files.reverse(),
+      babel      : require.resolve('@babel/core'),
+      appRoot    : global.appRoot,
+      include    : this.cli.get('config.frontend.riot.include') || {},
+      compiler   : require.resolve('@riotjs/compiler'),
       cachePath  : this._cachePath,
       cacheFile  : this._cacheFile,
-      sourceMaps : config.get('environment') === 'dev' && !config.get('noSourcemaps'),
+      sourceMaps : this.cli.get('config.environment') === 'dev',
     };
 
     // return runner
-    await this._runner.thread(this.thread, opts, false, async (c) => {
-      // notice that buble.transform returns {code, map}
-      c.code = (await babel.transform(c.code, {
-        sourceMaps     : false,
-        // notice that whitelines should be preserved
-        retainLines    : true,
-        presets        : [[
-          '@babel/env',
-          {
-            targets : {
-              esmodules : true,
-            },
-          },
-        ]],
-      })).code;
+    await this.cli.thread(this.thread, opts);
 
-      // changed
-      this._runner.emit('riot.hot', c);
-    });
+    // return counted
+    return `${files.length.toLocaleString()} riot emails compiled!`;
   }
 
   /**
@@ -233,15 +211,8 @@ class RiotTask {
    *
    * @return {Array}
    */
-  watch() {
+  watch () {
     // Return files
-    return ['emails/js/**/*', 'emails/**/*.riot'];
+    return '/emails/**/*.{riot,js}';
   }
 }
-
-/**
- * Export riot task
- *
- * @type {RiotTask}
- */
-module.exports = RiotTask;

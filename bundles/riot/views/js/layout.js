@@ -17,7 +17,7 @@ class LayoutStruct extends Base {
     this.__buildView = this.__buildView.bind(this);
 
     // return build view
-    return this.__buildView(...args);
+    return this.__buildView(...args, 'mount');
   }
 
   /**
@@ -28,7 +28,7 @@ class LayoutStruct extends Base {
     super.onBeforeHydrate(...args);
 
     // return build view
-    return this.__buildView(...args);
+    return this.__buildView(...args, 'mount');
   }
 
   /**
@@ -38,7 +38,7 @@ class LayoutStruct extends Base {
    */
   setProps(props) {
     // build  view
-    this.__buildView(props, this.state);
+    this.__buildView(props, this.state, 'props');
   }
 
   /**
@@ -47,7 +47,7 @@ class LayoutStruct extends Base {
    * @param {Object} props
    * @param {Object} state
    */
-  __buildView(props, state) {
+  __buildView(props, state, type) {
     // Reset opts if includes state
     const newState = props.state ? props.state : this.state;
     newState.view = props.mount.page;
@@ -67,7 +67,7 @@ class LayoutStruct extends Base {
     };
 
     // check view
-    if (!this.state.view) {
+    if (!this.state.view || type === 'mount') {
       return complete();
     }
 
