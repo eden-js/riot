@@ -93,9 +93,9 @@ export default class RiotTask {
     const { include } = data;
 
     // Loop include
-    Object.keys(include).forEach((key) => {
+    include.forEach((key) => {
       // push require head
-      head.push(`const ${key} = require('${include[key]}');`);
+      head.push(`const ${key} = require('${key}');`);
     });
 
     // join head
@@ -219,7 +219,7 @@ export default class RiotTask {
     // return backend
     const output = compiledFiles.map((entry) => {
       // return riot register
-      return `exporting['${entry.name}'] = require('${entry.file}').default; if (exporting['${entry.name}']) { riot.register('${entry.name}', exporting['${entry.name}']); }`;
+      return `exporting['${entry.name}'] = require('${entry.file}'); if (exporting['${entry.name}']) { riot.register('${entry.name}', exporting['${entry.name}']); }`;
     }).join(os.EOL);
 
     // write file

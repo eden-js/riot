@@ -1,20 +1,20 @@
 
 // Require local dependencies
-const riot    = require('riot');
-const store   = require('core/public/js/store');
-const events  = require('events');
-const socket  = require('socket/public/js/bootstrap');
-const reload  = require('@riotjs/hot-reload');
-const hydrate = require('@riotjs/hydrate');
+import riot    from 'riot';
+import store   from 'core/public/js/store';
+import socket  from 'socket/public/js/bootstrap';
+import reload  from '@riotjs/hot-reload';
+import hydrate from '@riotjs/hydrate';
+import { EventEmitter } from 'events';
 
 // shim required
 const shimRequired = {};
 
 // require default bases
-shimRequired['/js/base'] = require('.edenjs/.riot/js/base.js');
-shimRequired['/js/user'] = require('.edenjs/.riot/js/user.js');
-shimRequired['/js/model'] = require('.edenjs/.riot/js/model.js');
-shimRequired['/js/layout'] = require('.edenjs/.riot/js/layout.js');
+shimRequired['/js/base'] = require('.edenjs/.riot/js/base');
+shimRequired['/js/user'] = require('.edenjs/.riot/js/user');
+shimRequired['/js/model'] = require('.edenjs/.riot/js/model');
+shimRequired['/js/layout'] = require('.edenjs/.riot/js/layout');
 
 // Add riot to window
 window.riot = riot;
@@ -25,7 +25,7 @@ const tags = require('.edenjs/.cache/view.frontend.js');
 /**
  * Build riot frontend class
  */
-class RiotFrontend extends events {
+class RiotFrontend extends EventEmitter {
   /**
    * Construct riot frontend
    */
@@ -158,4 +158,6 @@ class RiotFrontend extends events {
  * @return {RiotFrontend}
  */
 window.eden.riot = new RiotFrontend();
-module.exports = window.eden.riot;
+
+// export default
+export default window.eden.riot;
