@@ -44,6 +44,9 @@ class RiotFrontend extends EventEmitter {
     this._mount = this._mount.bind(this);
     this._layout = this._layout.bind(this);
 
+    // set tags
+    this._tags = tags;
+
     // Frontend hooks
     store.on('layout', this._layout);
     store.on('initialize', this._mount);

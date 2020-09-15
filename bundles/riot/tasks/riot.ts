@@ -84,6 +84,7 @@ export default class RiotTask {
     const os   = require('os');
     const glob = require('@edenjs/glob');
     const path = require('path');
+    const { camelCase } = require('lodash');
 
     // require dependencies
     const { compile } = require(data.compiler);
@@ -95,7 +96,7 @@ export default class RiotTask {
     // Loop include
     include.forEach((key) => {
       // push require head
-      head.push(`const ${key} = require('${key}');`);
+      head.push(`import * as ${key} from '${key}';`);
     });
 
     // join head
@@ -217,14 +218,20 @@ export default class RiotTask {
     }))).filter(f => f);
 
     // return backend
-    const output = compiledFiles.map((entry) => {
-      // return riot register
-      return `exporting['${entry.name}'] = require('${entry.file}'); if (exporting['${entry.name}']) { riot.register('${entry.name}', exporting['${entry.name}']); }`;
-    }).join(os.EOL);
+    const output = [...(compiledFiles.map((entry) => {
+      // import component
+      return `import ${camelCase(entry.name)} from '${entry.file}';`;
+    })), ...(compiledFiles.map((entry) => {
+      // export tag
+      return `exporting['${entry.name}'] = ${camelCase(entry.name)};`;
+    })), ...(compiledFiles.map((entry) => {
+      // register component
+      return `riot.register('${entry.name}', ${camelCase(entry.name)});`;
+    }))].join(os.EOL);
 
     // write file
     await fs.remove(`${data.appRoot}/.edenjs/.cache/view.backend.js`);
-    await fs.remove(`${data.appRoot}/.edenjs/.cache/view.frontend.js`);
+    await fs.remove(`${data.appRoot}/.edenjs/.cache/view.frontend.ts`);
 
     // write files
     await fs.writeFile(`${data.appRoot}/.edenjs/.cache/view.backend.js`, [
@@ -236,7 +243,7 @@ export default class RiotTask {
       }).join(os.EOL),
       'module.exports = exporting;',
     ].join(os.EOL));
-    await fs.writeFile(`${data.appRoot}/.edenjs/.cache/view.frontend.js`, `${head}${os.EOL}${output}${os.EOL}module.exports = exporting;`);
+    await fs.writeFile(`${data.appRoot}/.edenjs/.cache/view.frontend.js`, `${head}${os.EOL}${output}${os.EOL}export default exporting;`);
 
     // write file
     await fs.writeFile(data.cacheFile, JSON.stringify(parsedMap));
