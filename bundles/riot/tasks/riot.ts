@@ -47,23 +47,22 @@ export default class RiotTask {
 
     // return runner
     const count = await this.cli.thread(this.thread, opts, false, async (c) => {
-      // notice that buble.transform returns {code, map}
-      c.code = (await babel.transform(c.code, {
-        corejs      : 3,
-        sourceMaps  : false,
-        retainLines : true,
-        presets     : [[
-          '@babel/env',
-          {
-            targets : {
-              esmodules : true,
-            },
-          },
-        ]],
-      })).code;
-
       // changed
       if (this.cli.get('config.environment') === 'dev') {
+        // notice that buble.transform returns {code, map}
+        c.code = (await babel.transform(c.code, {
+          sourceMaps  : false,
+          retainLines : true,
+          presets     : [[
+            '@babel/env',
+            {
+              targets : {
+                esmodules : true,
+              },
+            },
+          ]],
+        })).code;
+
         // emit hot reload
         this.cli.emit('hot', 'riot', c);
       }
