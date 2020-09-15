@@ -49,10 +49,10 @@ export default class RiotTask {
     const count = await this.cli.thread(this.thread, opts, false, async (c) => {
       // notice that buble.transform returns {code, map}
       c.code = (await babel.transform(c.code, {
-        sourceMaps     : false,
-        // notice that whitelines should be preserved
-        retainLines    : true,
-        presets        : [[
+        corejs      : 3,
+        sourceMaps  : false,
+        retainLines : true,
+        presets     : [[
           '@babel/env',
           {
             targets : {

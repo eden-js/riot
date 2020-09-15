@@ -10,6 +10,7 @@
     "@riotjs/hydrate": "^4.0.1",
     "@riotjs/ssr": "^5.0.0",
     "buble": "^0.20.0",
+    "core-js": "^3.6.5",
     "esm": "^3.2.25",
     "gulp": "^4.0.2",
     "gulp-concat": "^2.6.1",
