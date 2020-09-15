@@ -1,26 +1,32 @@
 
 // Require local dependencies
-import riot    from 'riot';
-import store   from 'core/public/js/store';
-import socket  from 'socket/public/js/bootstrap';
-import reload  from '@riotjs/hot-reload';
+import store from 'core/public/js/store';
+import socket from 'socket/public/js/bootstrap';
+import reload from '@riotjs/hot-reload';
 import hydrate from '@riotjs/hydrate';
+import * as riot from 'riot';
 import { EventEmitter } from 'events';
+
+// import shims
+import shimBase from '.edenjs/.riot/js/base';
+import shimUser from '.edenjs/.riot/js/user';
+import shimModel from '.edenjs/.riot/js/model';
+import shimLayout from '.edenjs/.riot/js/layout';
+
+// Require tags
+import tags from '.edenjs/.cache/view.frontend';
 
 // shim required
 const shimRequired = {};
 
 // require default bases
-shimRequired['/js/base'] = require('.edenjs/.riot/js/base');
-shimRequired['/js/user'] = require('.edenjs/.riot/js/user');
-shimRequired['/js/model'] = require('.edenjs/.riot/js/model');
-shimRequired['/js/layout'] = require('.edenjs/.riot/js/layout');
+shimRequired['/js/base'] = shimBase;
+shimRequired['/js/user'] = shimUser;
+shimRequired['/js/model'] = shimModel;
+shimRequired['/js/layout'] = shimLayout;
 
 // Add riot to window
 window.riot = riot;
-
-// Require tags
-const tags = require('.edenjs/.cache/view.frontend.js');
 
 /**
  * Build riot frontend class
