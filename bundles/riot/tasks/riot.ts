@@ -38,7 +38,7 @@ export default class RiotTask {
       files      : files.reverse(),
       babel      : require.resolve('@babel/core'),
       appRoot    : global.appRoot,
-      include    : this.cli.get('config.frontend.riot.include', []) || {},
+      include    : Array.from(new Set(this.cli.get('config.frontend.riot.include', []) || [])),
       compiler   : require.resolve('@riotjs/compiler'),
       cachePath  : this._cachePath,
       cacheFile  : this._cacheFile,
@@ -93,7 +93,7 @@ export default class RiotTask {
     const { include } = data;
 
     // Loop include
-    include.forEach((key) => {
+    (include || []).forEach((key) => {
       // push require head
       head.push(`import * as ${key} from '${key}';`);
     });
