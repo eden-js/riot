@@ -97,17 +97,17 @@ export default class RiotDaemon extends Daemon {
     }, opts));
 
     // remove all tags
-    Object.keys(this.emails).forEach((key) => {
+    [...(Object.keys(this.emails)), ...(Object.keys(this.components))].forEach((key) => {
       // split/join
       base = base.split(`<${key}>`).join('').split(`</${key}>`).join('');
     });
 
     // rendered
-    const rendered = mjml2html(base, {
-      validationLevel : 'skip',
+    const rendered = mjml2html(`<mjml>${base}</mjml>`, {
+      validationLevel : 'strict',
     });
 
     // Return render
-    return rendered.errors && rendered.errors.length ? base : rendered.html;
+    return rendered.html;
   }
 }
