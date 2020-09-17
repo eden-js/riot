@@ -97,7 +97,7 @@ export default class RiotDaemon extends Daemon {
     }, opts));
 
     // remove all tags
-    [...(Object.keys(this.emails)), ...(Object.keys(this.components))].forEach((key) => {
+    ['div', ...(Object.keys(this.emails)), ...(Object.keys(this.components))].forEach((key) => {
       // split/join
       base = base.split(`<${key}>`).join('').split(`</${key}>`).join('');
     });
