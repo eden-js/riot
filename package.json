@@ -19,6 +19,7 @@
     "gulp-riot": "^1.1.5",
     "gulp-sourcemaps": "^2.6.5",
     "jsdom": "^16.4.0",
+    "mjml": "^4.6.3",
     "riot": "^4.14.0"
   },
   "engines": {

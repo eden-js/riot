@@ -3,6 +3,7 @@
 import riot      from '@frontless/riot';
 import Daemon    from 'daemon';
 import { JSDOM } from 'jsdom';
+import mjml2html from 'mjml';
 
 
 /**
@@ -87,12 +88,26 @@ export default class RiotDaemon extends Daemon {
    * @return Promise
    */
   async email(template, opts) {
-    // Return render
-    return await this.render(Object.assign({}, {
+    // base
+    let base = await this.render(Object.assign({}, {
       mount : {
         layout : `${template}-email`,
       },
       isBackend : true,
     }, opts));
+
+    // remove all tags
+    Object.keys(this.emails).forEach((key) => {
+      // split/join
+      base = base.split(`<${key}>`).join('').split(`</${key}>`).join('');
+    });
+
+    // rendered
+    const rendered = mjml2html(base, {
+      validationLevel : 'skip',
+    });
+
+    // Return render
+    return rendered.errors && rendered.errors.length ? base : rendered.html;
   }
 }
