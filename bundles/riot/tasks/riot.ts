@@ -219,13 +219,10 @@ export default class RiotTask {
     // return backend
     const output = [...(compiledFiles.map((entry) => {
       // import component
-      return `import ${camelCase(entry.name)} from '${entry.file}';`;
+      return `import * as ${camelCase(entry.name)} from '${entry.file}';`;
     })), ...(compiledFiles.map((entry) => {
       // export tag
       return `exporting['${entry.name}'] = ${camelCase(entry.name)};`;
-    })), ...(compiledFiles.map((entry) => {
-      // register component
-      return `riot.register('${entry.name}', ${camelCase(entry.name)});`;
     }))].join(os.EOL);
 
     // write file

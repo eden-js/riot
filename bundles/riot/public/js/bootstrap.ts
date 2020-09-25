@@ -47,6 +47,12 @@ class RiotFrontend extends EventEmitter {
     // set tags
     this._tags = tags;
 
+    // loop tags
+    Object.keys(tags).forEach((key) => {
+      // register
+      riot.register(key, tags[key].default || tags[key]);
+    });
+
     // Frontend hooks
     store.on('layout', this._layout);
     store.on('initialize', this._mount);
@@ -113,8 +119,11 @@ class RiotFrontend extends EventEmitter {
    * @param {Object} state
    */
   _mount(state) {
+    // base
+    const base = tags[document.querySelector('body').children[0].tagName.toLowerCase()];
+    
     // create hydrated
-    const createHydrated = hydrate(tags[document.querySelector('body').children[0].tagName.toLowerCase()]);
+    const createHydrated = hydrate(base.default || base);
 
     // Mount riot tag
     this._mounted = createHydrated(document.querySelector('body').children[0], state);
