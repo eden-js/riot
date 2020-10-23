@@ -119,6 +119,9 @@ class RiotFrontend extends EventEmitter {
    * @param {Object} state
    */
   _mount(state) {
+    // Replace with
+    $(document.querySelector('body').children[0]).replaceWith(document.createElement(document.querySelector('body').children[0].tagName.toLowerCase()));
+
     // Mount new tag
     [this._mounted] = riot.mount(document.querySelector('body').children[0], state);
   }
@@ -148,10 +151,10 @@ class RiotFrontend extends EventEmitter {
     this._mounted.unmount(true);
 
     // Replace with
-    jQuery(current).replaceWith(document.createElement(layout));
+    $(current).replaceWith(document.createElement(layout));
 
     // Add class
-    jQuery(document.querySelector('body').children[0]).addClass('eden-layout');
+    $(document.querySelector('body').children[0]).addClass('eden-layout');
 
     // Mount new tag
     [this._mounted] = riot.mount(document.querySelector('body').children[0], state);
