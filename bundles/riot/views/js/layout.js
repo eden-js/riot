@@ -48,6 +48,9 @@ class LayoutStruct extends Base {
    * @param {Object} state
    */
   __buildView(props, state, type) {
+    // current view
+    const currentView = this.state.view;
+
     // Reset opts if includes state
     const newState = props.state ? props.state : this.state;
     newState.view = props.mount.page;
@@ -68,6 +71,11 @@ class LayoutStruct extends Base {
 
     // check view
     if (!this.state.view || type === 'mount') {
+      return complete();
+    }
+
+    // check view
+    if (currentView !== newState.view) {
       return complete();
     }
 
