@@ -7,7 +7,7 @@
     "@frontless/riot": "^4.5.1",
     "@riotjs/compiler": "^5.0.0",
     "@riotjs/hot-reload": "^4.0.1",
-    "@riotjs/hydrate": "^4.0.1",
+    "@riotjs/hydrate": "^5.0.0",
     "@riotjs/ssr": "^5.0.0",
     "buble": "^0.20.0",
     "core-js": "^3.6.5",

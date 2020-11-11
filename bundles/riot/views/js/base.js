@@ -43,6 +43,16 @@ class EdenBaseStruct extends Events {
   }
 
   /**
+   * on mounted
+   *
+   * @param  {...any} args
+   */
+  onHydrated(...args) {
+    // run in super
+    this.onMounted(...args);
+  }
+
+  /**
    * on updated
    *
    * @param  {...any} args
@@ -64,7 +74,7 @@ class EdenBaseStruct extends Events {
   /**
    * on before hydrate
    *
-   * @param  {...any} args 
+   * @param  {...any} args
    */
   onBeforeHydrate(...args) {
     // run in super
@@ -74,7 +84,7 @@ class EdenBaseStruct extends Events {
   /**
    * on before unmount
    *
-   * @param  {...any} args 
+   * @param  {...any} args
    */
   onBeforeUnmount(...args) {
     // run in super
