@@ -119,14 +119,11 @@ class RiotFrontend extends EventEmitter {
    * @param {Object} state
    */
   _mount(state) {
-    // base
-    const base = this._tags[document.querySelector('body').children[0].tagName.toLowerCase()];
-    
-    // create hydrated
-    const createHydrated = hydrate(base.default || base);
+    // Replace with
+    $(document.querySelector('body').children[0]).replaceWith(document.createElement(document.querySelector('body').children[0].tagName.toLowerCase()));
 
-    // Mount riot tag
-    this._mounted = createHydrated(document.querySelector('body').children[0], state);
+    // Mount new tag
+    [this._mounted] = riot.mount(document.querySelector('body').children[0], state);
   }
 
   /**
