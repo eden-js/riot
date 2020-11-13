@@ -40,28 +40,28 @@ class RiotFrontend extends EventEmitter {
     super(...args);
 
     // Bind methods
-    this._hot = this._hot.bind(this);
-    this._mount = this._mount.bind(this);
-    this._layout = this._layout.bind(this);
+    this.buildTag = this.buildTag.bind(this);
+    this.buildMount = this.buildMount.bind(this);
+    this.buildLayout = this.buildLayout.bind(this);
 
     // set tags
-    this._tags = tags;
+    this.tags = tags;
 
     // loop tags
-    Object.keys(tags).forEach((key) => {
+    Object.keys(this.tags).forEach((key) => {
       // register
-      riot.register(key, tags[key].default || tags[key]);
+      riot.register(key, this.tags[key].default || this.tags[key]);
     });
 
     // Frontend hooks
-    store.on('layout', this._layout);
-    store.on('initialize', this._mount);
+    store.on('layout', this.buildLayout);
+    store.on('initialize', this.buildMount);
 
     // check environment
     if (store.get('config.environment') !== 'dev') return;
 
     // Dev hooks
-    socket.on('dev:riot', this._hot);
+    socket.on('dev:riot', this.buildTag);
   }
 
   /**
@@ -69,7 +69,7 @@ class RiotFrontend extends EventEmitter {
    *
    * @param {*} data
    */
-  _hot(data) {
+  buildTag(data) {
     // check change
     eden.alert.info(`Reloading ${data.file}`);
 
@@ -118,12 +118,18 @@ class RiotFrontend extends EventEmitter {
    *
    * @param {Object} state
    */
-  _mount(state) {
+  buildMount(state) {
     // Replace with
     $(document.querySelector('body').children[0]).replaceWith(document.createElement(document.querySelector('body').children[0].tagName.toLowerCase()));
 
     // Mount new tag
-    [this._mounted] = riot.mount(document.querySelector('body').children[0], state);
+    riot.mount(document.querySelector('body').children[0], {
+      ...state,
+
+      layout : (ref) => {
+        this.layout = ref;
+      },
+    });
   }
 
   /**
@@ -134,7 +140,7 @@ class RiotFrontend extends EventEmitter {
    * @private
    * @return {Boolean}
    */
-  _layout(state) {
+  buildLayout(state) {
     // Set layout variable
     const layout = (state.mount.layout || 'main-layout');
 
@@ -142,13 +148,13 @@ class RiotFrontend extends EventEmitter {
     const current = document.querySelector('body').children[0];
 
     // Check if layout needs replacing
-    if (current.tagName.toLowerCase() === layout.toLowerCase()) {
+    if (this.layout && current.tagName.toLowerCase() === layout.toLowerCase()) {
       // just update mounted
-      return this._mounted.setProps(state);
+      return this.layout.setProps(state);
     }
 
     // Unmount tag
-    this._mounted.unmount(true);
+    this.layout.unmount(true);
 
     // Replace with
     $(current).replaceWith(document.createElement(layout));
@@ -157,7 +163,13 @@ class RiotFrontend extends EventEmitter {
     $(document.querySelector('body').children[0]).addClass('eden-layout');
 
     // Mount new tag
-    [this._mounted] = riot.mount(document.querySelector('body').children[0], state);
+    riot.mount(document.querySelector('body').children[0], {
+      ...state,
+
+      layout : (ref) => {
+        this.layout = ref;
+      },
+    });
 
     // Mounted true
     state.mounted = true; // eslint-disable-line no-param-reassign

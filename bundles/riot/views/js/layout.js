@@ -13,6 +13,11 @@ class LayoutStruct extends Base {
     // run super
     super.onBeforeMount(...args);
 
+    // check props
+    if (this.props.layout) {
+      this.props.layout(this);
+    }
+
     // build view
     this.__buildView = this.__buildView.bind(this);
 
@@ -26,6 +31,14 @@ class LayoutStruct extends Base {
   onBeforeHydrate(...args) {
     // run super
     super.onBeforeHydrate(...args);
+
+    // check props
+    if (this.props.layout) {
+      this.props.layout(this);
+    }
+
+    // build view
+    this.__buildView = this.__buildView.bind(this);
 
     // return build view
     return this.__buildView(...args, 'mount');
