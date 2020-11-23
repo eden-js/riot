@@ -6,7 +6,7 @@
     "@edenjs/glob": "^1.0.0",
     "@frontless/riot": "^4.5.1",
     "@riotjs/compiler": "^5.0.0",
-    "@riotjs/hot-reload": "^4.0.1",
+    "@riotjs/hot-reload": "^5.0.0",
     "@riotjs/hydrate": "^5.0.0",
     "@riotjs/ssr": "^5.0.0",
     "buble": "^0.20.0",
